@@ -1,0 +1,238 @@
+from __future__ import annotations
+from typing import Any, List, Optional, Union, Literal
+from pydantic import BaseModel, Field, ConfigDict, field_serializer
+from bson import ObjectId
+
+
+class PyObjectId(ObjectId):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v: Any, info: Any = None):
+        if isinstance(v, ObjectId):
+            return v
+        if isinstance(v, str) and ObjectId.is_valid(v):
+            return ObjectId(v)
+        if isinstance(v, dict) and "$oid" in v and ObjectId.is_valid(v["$oid"]):
+            return ObjectId(v["$oid"])
+        raise TypeError("Invalid ObjectId")
+
+    @classmethod
+    def __get_pydantic_json_schema__(cls, _):
+        return {"type": "string"}
+
+
+class Time(BaseModel):
+    hours: int
+    minutes: int
+
+
+class Alert(BaseModel):
+    title: str
+    message: str
+    start_offset: int
+    duration: int
+    times: List[Time]
+    random: bool
+    random_interval: int
+    sticky: bool
+    sticky_label: str
+    timeout: bool
+    timeout_after: int
+
+
+class Graph(BaseModel):
+    display: bool
+    variable: str
+    title: str
+    blurb: str
+    type: str
+    max_points: int
+
+
+class NoGraph(BaseModel):
+    display: bool
+
+
+GraphOrNoGraph = Union[Graph, NoGraph]
+
+
+class SectionQuestionBase(BaseModel):
+    # corresponds to JSON "_type"
+    type: str = Field(alias="_type")
+    # corresponds to JSON "type"
+    question_type: str = Field(alias="type")
+    id: str
+    text: str
+    required: bool
+    rand_group: Optional[str] = None
+    hide_id: Optional[str] = None
+    hide_value: Optional[Union[str, bool]] = None
+    hide_if: Optional[bool] = None
+
+    model_config = ConfigDict(populate_by_alias=True)
+
+
+class TextQuestion(SectionQuestionBase):
+    subtype: str
+
+
+class DateTimeQuestion(SectionQuestionBase):
+    subtype: str
+
+
+class YesNoQuestion(SectionQuestionBase):
+    yes_text: str
+    no_text: str
+
+
+class SliderQuestion(SectionQuestionBase):
+    min: int
+    max: int
+    hint_left: str
+    hint_right: str
+
+
+class MultiQuestion(SectionQuestionBase):
+    radio: bool
+    modal: bool
+    options: List[str]
+    shuffle: bool
+
+
+class MediaQuestion(SectionQuestionBase):
+    subtype: str
+    src: str
+    thumb: Optional[str] = None
+
+
+class InstructionQuestion(SectionQuestionBase):
+    pass
+
+
+class PhotoQuestion(SectionQuestionBase):
+    pass
+
+
+Question = Union[
+    TextQuestion,
+    DateTimeQuestion,
+    YesNoQuestion,
+    SliderQuestion,
+    MultiQuestion,
+    MediaQuestion,
+    InstructionQuestion,
+    PhotoQuestion,
+]
+
+
+class Section(BaseModel):
+    type: str = Field(alias="_type")
+    id: str
+    name: str
+    shuffle: bool
+    questions: List[Question]
+
+    model_config = ConfigDict(populate_by_alias=True)
+
+
+class Survey(BaseModel):
+    # discriminator now comes from the JSON "type" field
+    type: Literal["survey"] = Field(alias="type")
+    submit_text: str
+    id: str
+    sections: List[Section]
+    shuffle: bool
+
+    model_config = ConfigDict(
+        populate_by_alias=True,
+        extra="ignore",     # drop any keys we don’t explicitly declare (e.g. _type)
+    )
+
+
+class Pvt(BaseModel):
+    # discriminator now comes from the JSON "type" field
+    type: Literal["pvt"] = Field(alias="type")
+    id: str
+    trials: int
+    min_waiting: int
+    max_waiting: int
+    max_reaction: int
+    show: bool
+    exit: bool
+
+    model_config = ConfigDict(
+        populate_by_alias=True,
+        extra="ignore",
+    )
+
+
+Params = Union[Pvt, Survey]
+
+
+class Module(BaseModel):
+    type: str = Field(alias="_type")
+    id: str
+    name: str
+    condition: str
+    alerts: Alert
+    graph: GraphOrNoGraph
+    unlock_after: List[str]
+    params: Params
+
+    model_config = ConfigDict(populate_by_alias=True)
+
+    @field_serializer("params", mode="plain")
+    def _serialize_params(self, params_value, _info):
+        # Dump to dict and inject legacy tag
+        if isinstance(params_value, BaseModel):
+            data = params_value.model_dump(by_alias=True, exclude_none=True)
+        elif isinstance(params_value, dict):
+            data = params_value.copy()
+        else:
+            return params_value
+        data.setdefault("_type", "params")
+        return data
+
+
+class Properties(BaseModel):
+    type: str = Field(alias="_type")
+    study_name: str
+    study_id: str
+    created_by: str
+    instructions: str
+    post_url: str
+    empty_msg: str
+    banner_url: str
+    support_url: str
+    support_email: str
+    cache: bool
+    ethics: str
+    pls: str
+    conditions: List[str]
+    redcap_server_api_url: Optional[str] = None
+
+    model_config = ConfigDict(populate_by_alias=True)
+
+
+class StudyOut(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id")
+    type: Literal["study"] = Field(alias="_type")
+    timestamp: int
+    properties: Properties
+    modules: List[Module]
+
+    model_config = ConfigDict(
+        validate_by_name=True,
+        json_encoders={ObjectId: str},
+    )
+
+
+class StudyCreate(BaseModel):
+    type: Literal["study"] = Field(alias="_type")
+    properties: Properties
+    modules: List[Module]
+
+    model_config = ConfigDict(populate_by_alias=True)

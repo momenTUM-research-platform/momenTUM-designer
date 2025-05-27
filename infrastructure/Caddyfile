@@ -1,0 +1,15 @@
+:80 {
+    @api path /api/*
+    handle @api {
+        header Access-Control-Allow-Origin   *
+        header Access-Control-Allow-Methods  "GET, POST, PUT, DELETE, OPTIONS"
+        header Access-Control-Allow-Headers  "Origin, Content-Type, Accept, Authorization"
+        reverse_proxy backend:8200
+    }
+    handle {
+        reverse_proxy frontend:3200
+    }
+
+    # gzip your assets over the wire
+    encode gzip
+}

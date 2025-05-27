@@ -1,0 +1,54 @@
+services:
+  backend:
+    build: ./backend
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app
+    container_name: study-designer-api
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    expose:
+      - "8200"
+    ports:
+      - "8200:8200"
+    volumes:
+      - ./backend:/app
+      - ./studies:/app/studies
+
+  tests:
+    build: ./backend
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app
+    container_name: study-designer-tests
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - ./studies:/app/studies
+    entrypoint: ["pytest"]
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: study-designer-frontend
+    restart: unless-stopped
+    expose:
+      - "3200"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
+
+  caddy:
+    image: caddy:2
+    container_name: caddy-designer
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./infrastructure/Caddyfile:/etc/caddy/Caddyfile:ro
