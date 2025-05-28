@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Any, List, Optional, Union, Literal
-from pydantic import BaseModel, Field, ConfigDict, field_serializer
+from pydantic import BaseModel, Field, ConfigDict, field_serializer, field_validator
 from bson import ObjectId
 
 
@@ -77,6 +77,24 @@ class SectionQuestionBase(BaseModel):
 
 class TextQuestion(SectionQuestionBase):
     subtype: str
+    min_value: Optional[float] = Field(
+        None,
+        description="If this is a numeric question, the minimum allowed value"
+    )
+    max_value: Optional[float] = Field(
+        None,
+        description="If this is a numeric question, the maximum allowed value"
+    )
+
+    @field_validator("max_value", mode="after")
+    def _check_max_gt_min(cls, v, info):
+        data = info.data
+        # only enforce when subtype=="numeric" and both bounds are present
+        if data.get("subtype") == "numeric":
+            minv = data.get("min_value")
+            if v is not None and minv is not None and v <= minv:
+                raise ValueError(f"max_value ({v}) must be > min_value ({minv})")
+        return v
 
 
 class DateTimeQuestion(SectionQuestionBase):

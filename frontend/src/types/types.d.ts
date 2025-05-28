@@ -170,6 +170,10 @@ interface Instruction extends Question {
 interface TextQuestion extends Question {
   type: "text";
   subtype: "short" | "long" | "numeric";
+  /** Optional minimum allowed value, only for numeric subtype */
+  min_value?: number;
+  /** Optional maximum allowed value, only for numeric subtype */
+  max_value?: number;
 }
 interface DateTime extends Question {
   type: "datetime";

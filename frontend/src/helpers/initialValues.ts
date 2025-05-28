@@ -67,8 +67,6 @@ export const initialParamPVT = (id: string): Params => {
   };
 };
 
-
-
 export const initialSection = (id: string): Section => {
   return {
     _type: "section",
@@ -88,5 +86,7 @@ export const initialQuestion = (id: string): TextQuestion => {
     text: String(),
     type: "text",
     subtype: "short",
+    min_value: undefined,
+    max_value: undefined,
   };
 };

@@ -98,6 +98,16 @@ export function Form({ id }: { id: string }) {
   if (!editableIds) hiddenFields.forEach(f => (uiSchema[f] = { "ui:widget": "hidden" }));
   if (!showHidingLogic) hidingLogic.forEach(f => (uiSchema[f] = { "ui:widget": "hidden" }));
 
+  // Hide min/max unless subtype === "numeric" ===
+  if (atom.content._type === "question") {
+    // cast to any so TS knows about our new props
+    const { subtype } = atom.content as any;
+    if (subtype !== "numeric") {
+      uiSchema.min_value = { "ui:widget": "hidden" };
+      uiSchema.max_value = { "ui:widget": "hidden" };
+    }
+  }
+
   return (
     <div className="px-10 py-5">
       <FormComponent

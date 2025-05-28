@@ -133,7 +133,17 @@ export const question = (questions: SchemaEnum[]) => {
               type: {
                 enum: ["text"],
               },
-            },
+              min_value: {
+                type: "number",
+                title: "Min Value",
+                description: "Optional minimum allowed value (only for numeric subtype).",
+              },
+              max_value: {
+                type: "number",
+                title: "Max Value",
+                description: "Optional maximum allowed value (only for numeric subtype).",
+              },
+            }
           },
           {
             required: ["subtype"],
