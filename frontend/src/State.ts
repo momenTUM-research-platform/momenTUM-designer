@@ -25,7 +25,7 @@ import {
 } from "types/guards";
 import { toTitleCase } from "utils/utils";
 // Custom alphabet required for redcap handling of ids; they don't allow capital letters or hyphens
-const nanoid = customAlphabet("0123456789_abcdefghijklmnopqrstuvwxyz", 16);
+const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 16);
 export const nodeTypes = {
   create: NewNode,
   delete: DeleteNode,
@@ -40,7 +40,7 @@ export interface State {
   direction: "TB" | "LR";
   atoms: Atoms;
   conditions: string[];
-  modal: null | "download" | "upload" | "qr" | "redcap" | "checklist";
+  modal: null | "download" | "upload" | "qr" | "redcap" | "checklist" | "generateStudy";
   permalink: string | null;
   liveValidation: boolean;
   editableIds: boolean;
@@ -55,7 +55,7 @@ export interface State {
     content: Properties | Question | Module | Section | Params
   ) => void;
   setAtoms: (atoms: Atoms) => void;
-  setModal: (value: null | "upload" | "download" | "qr" | "redcap") => void;
+  setModal: (value: null | "upload" | "download" | "qr" | "redcap" | "checklist" | "generateStudy") => void;
   saveAtoms: () => void;
   addNewNode: (type: AtomVariants, parent: string, flag: string) => void;
   deleteNode: (id: string) => void;

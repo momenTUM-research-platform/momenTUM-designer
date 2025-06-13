@@ -6,6 +6,7 @@ import time
 from fastapi.responses import JSONResponse
 from db import get_db
 from models.study import StudyCreate, StudyOut
+from fastapi.encoders import jsonable_encoder
 
 router = APIRouter(prefix="/studies", tags=["studies"])
 
@@ -71,8 +72,8 @@ async def create_study(
             },
         )
 
-    # build the raw dict without relying on StudyOut
-    doc = payload.model_dump(by_alias=True, exclude_none=True)
+    # build the raw dict with JSON-safe encoding (dates → ISO strings)
+    doc = jsonable_encoder(payload, by_alias=True, exclude_none=True)
     doc["_type"] = "study"
     doc["timestamp"] = int(time.time() * 1000)
 

@@ -75,3 +75,6 @@ yarn-error.log*
 *.code-workspace
 
 ./backend/.env
+
+./backend/routers/nlp.py
+./backend/routers/nlp_local.py

@@ -64,7 +64,6 @@ export const question = (questions: SchemaEnum[]) => {
           "Indicates the branching behaviour. If true, the element will disappear if the value of the question equals hide_value. If false, the element will appear instead.",
         default: false,
         examples: [true],
-        enumNames: ["Hide", "Show"],
       },
       rand_group: {
         $id: "#/properties/modules/items/properties/sections/items/properties/questions/items/anyOf/0/properties/rand_group",

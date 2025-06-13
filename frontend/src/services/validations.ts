@@ -1,4 +1,5 @@
 import Ajv from "ajv";
+import addFormats from "ajv-formats";
 import { paramsSurvey } from "../../schema/paramsSurvey";
 import { paramsPVT } from "../../schema/paramsPVT";
 import { section as section_schema } from "../../schema/section";
@@ -14,7 +15,7 @@ import { betterAjvErrors } from "@apideck/better-ajv-errors";
 export function validateProperties(properties: Properties) {
   // Create an instance of Ajv
   const ajv = new Ajv({ allErrors: true });
-  ajv.addKeyword("enumNames");
+  addFormats(ajv);
   const schema = properties_schema;
   const validator = ajv.compile(schema);
   const is_valid = validator(properties);
@@ -44,7 +45,7 @@ export function validateModule(
 ) {
   // Create an instance of Ajv
   const ajv = new Ajv({ allErrors: true });
-  ajv.addKeyword("enumNames");
+  addFormats(ajv);
   const schema = module_schema(conditions, qIds, mIds);
   const validator = ajv.compile(schema);
   const is_valid = validator(module);
@@ -70,7 +71,7 @@ export function validateModule(
 export function validateParams(params: Params, qIds: SchemaEnum[]) {
   // Create an instance of Ajv
   const ajv = new Ajv({ allErrors: true });
-  ajv.addKeyword("enumNames");
+  addFormats(ajv);
   if (params.type == "survey") {
     const schema = paramsSurvey(qIds);
     const validator = ajv.compile(schema);
@@ -117,7 +118,7 @@ export function validateParams(params: Params, qIds: SchemaEnum[]) {
 export function validateSection(section: Section) {
   // Create an instance of Ajv
   const ajv = new Ajv({ allErrors: true });
-  ajv.addKeyword("enumNames");
+  addFormats(ajv);
   const schema = section_schema;
   const validator = ajv.compile(section_schema);
   const is_valid = validator(section);
@@ -143,7 +144,7 @@ export function validateSection(section: Section) {
 export function validateQuestions(question: Question, qIds: SchemaEnum[]) {
   // Create an instance of Ajv
   const ajv = new Ajv({ allErrors: true });
-  ajv.addKeyword("enumNames");
+  addFormats(ajv);
   const schema = question_schema(qIds);
   const validator = ajv.compile(question_schema(qIds));
   const is_valid = validator(question);
@@ -211,7 +212,7 @@ export function validateStudyFromObj(study_obj: any) {
   const { true_conditions, qIds, mIds } = getStudyCQM(study_obj);
   const schema = study_schema(true_conditions, qIds, mIds);
   const ajv = new Ajv();
-  ajv.addKeyword("enumNames");
+  addFormats(ajv);
   const validator = ajv.compile(schema);
 
   const is_valid = validator(study_obj);
@@ -238,7 +239,7 @@ export function validateStudyFromObj(study_obj: any) {
 export function validateStudy(study: any): study is Study {
   // Create an instance of Ajv
   const ajv = new Ajv({ allErrors: true });
-  ajv.addKeyword("enumNames");
+  addFormats(ajv);
   const { true_conditions, qIds, mIds } = getStudyCQM(study);
   const schema = study_schema(true_conditions, qIds, mIds);
 

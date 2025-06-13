@@ -45,6 +45,13 @@ export function Menu() {
       action: () => setModal("download"),
       icon: CloudArrowDownIcon,
     },
+    // {
+    //   name: "Generate Study",
+    //   description:
+    //     "Generate the study automatically based on the text prompt.",
+    //   action: () => setModal("generateStudy"),
+    //   icon: CloudArrowDownIcon,
+    // },
     {
       name: "Create REDCap Project",
       description:

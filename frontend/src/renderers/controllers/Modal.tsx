@@ -6,6 +6,7 @@ import { QR } from "../QR";
 import { Fragment } from "react";
 import { RedCap } from "../actions/RedcapProjectCreation";
 import { ChecklistModal } from "../ChecklistModal";
+import { GenerateStudy } from "../actions/GenerateStudy";
 
 export function Modal() {
   const { modal, setModal } = useStore();
@@ -17,6 +18,7 @@ export function Modal() {
     qr: <QR close={() => setModal(null)} />,
     redcap: <RedCap close={() => setModal(null)} />,
     checklist: <ChecklistModal />,
+    generateStudy: <GenerateStudy close={() => setModal(null)} />,
   };
 
   return (

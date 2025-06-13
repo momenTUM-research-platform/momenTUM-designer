@@ -1,54 +1,64 @@
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { useStore } from "../State";
-import { calculateTimelineFromAtoms } from "./calculatorsFromAtoms";
+import { schedule, Occurence } from "./scheduler";
+import type { Module, Properties } from "src/app/interfaces/study";
 
-/**
- * Uses timeline to return Days, setDate and Days[]
- * @returns Array
- */
+export interface Day {
+  date: string;            // "YYYY-MM-DD"
+  events: Occurence[];     // all events scheduled for that date
+  isCurrentMonth: boolean; // grid cell shading
+  isToday: boolean;        // highlight today
+  isSelected: boolean;     
+}
+
 export function useTimeline(): [
   dayjs.Dayjs,
   React.Dispatch<React.SetStateAction<dayjs.Dayjs>>,
   Day[]
 ] {
-  const [date, setDate] = useState(dayjs());
-  const { atoms } = useStore();
-  const [days, setDays] = useState<Days>(
-    // @ts-ignore
-    calculateTimelineFromAtoms(atoms, atoms.get("properties")!.content)
-  );
+  const [currentDate, setCurrentDate] = useState(dayjs());
+  const atoms = useStore((s) => s.atoms);
   const [visibleDays, setVisibleDays] = useState<Day[]>([]);
 
   useEffect(() => {
-    // @ts-ignore
-    const events = calculateTimelineFromAtoms(atoms, atoms.get("properties")!.content);
-    setDays(events);
-    let visibleDays: Day[] = [];
-    const offsetFromToday = date.diff(dayjs(), "day");
-    // for any month outside of those we explicitely calculated, we need to get x days before dayOfMonth(current day) = x and 42-x days after current day
-    // Then, to get the monday before the 1. of the month, subtract the day of the week of the first day of the month
-    const dayOfMonth = date.date() - 1; // Subtract one, because we want the distance to the first day of the month, so not counting itself
-    const dayOfWeek = (date.subtract(dayOfMonth).day() + 5) % 7; // Day of week is given from sunday to saturday, this converts it to monday to sunday
+    // 1) grab study props + modules out of the atoms map
+    const propsNode = atoms.get("properties");
+    if (!propsNode) return;
+    const properties = propsNode.content as Properties;
 
-    const x = dayOfMonth + dayOfWeek;
+    const modulesList: Module[] = Array.from(atoms.values())
+      .filter((n) => n.type === "module")
+      .map((n) => n.content as Module);
 
-    for (let i = -x; i < 42 - x; i++) {
-      const day = date.add(i, "days"); // Acts as subtract if i is negative
-      visibleDays.push({
-        date: day.format("YYYY-MM-DD"),
-        events:
-          offsetFromToday + i >= 0 && offsetFromToday + i < days.length
-            ? days[offsetFromToday + i]
-            : [],
-        isCurrentMonth: date.isSame(day, "month"),
-        isToday: dayjs().isSame(day, "day"),
+    // 2) generate all occurrences using shared scheduler
+    const allEvents: Occurence[] = modulesList.flatMap((m) =>
+      schedule(m, properties)
+    );
+
+    // 3) build a 6×7 month grid starting on the Monday before the 1st
+    const startOfMonth = currentDate.startOf("month");
+    // dayjs().day(): Sunday=0…Saturday=6; we want Monday=0…Sunday=6
+    const mondayOffset = (startOfMonth.day() + 6) % 7;
+    const gridStart = startOfMonth.subtract(mondayOffset, "day");
+
+    // 4) fill 42 days, slot each event by matching ISO date prefix
+    const grid: Day[] = Array.from({ length: 42 }).map((_, i) => {
+      const d = gridStart.add(i, "day");
+      const dateKey = d.format("YYYY-MM-DD");
+      return {
+        date: dateKey,
+        events: allEvents.filter((e) =>
+          e.datetime.startsWith(dateKey)
+        ),
+        isCurrentMonth: d.month() === currentDate.month(),
+        isToday: d.isSame(dayjs(), "day"),
         isSelected: false,
-      });
-    }
+      };
+    });
 
-    setVisibleDays(visibleDays);
-  }, [date, atoms]);
+    setVisibleDays(grid);
+  }, [currentDate, atoms]);
 
-  return [date, setDate, visibleDays];
+  return [currentDate, setCurrentDate, visibleDays];
 }

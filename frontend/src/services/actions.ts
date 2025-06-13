@@ -201,3 +201,27 @@ export function saveRedcapFileForManual(): void {
     toast.error("Failed to generate ODM file.");
   }
 }
+
+export async function generateStudy(instructions: string): Promise<Study> {
+  const uri = `${API_URL}/nlp/generate-study`;
+  console.debug("[generateStudy] POST →", uri, "body:", { instructions });
+
+  try {
+    const response = await fetch(uri, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ instructions }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Status ${response.status}: ${text}`);
+    }
+
+    // Parse and return the JSON response as a Study object
+    return (await response.json()) as Study;
+  } catch (err) {
+    console.error("[generateStudy] Error:", err);
+    throw err;
+  }
+}

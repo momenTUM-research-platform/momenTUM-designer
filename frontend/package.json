@@ -53,6 +53,7 @@
     "reactflow": "^11.8.3",
     "reactjs-popup": "^2.0.5",
     "resize-observer-polyfill": "^1.5.1",
+    "rrule": "^2.8.1",
     "styled-components": "^6.0.7",
     "tailwindcss": "^3.3.3",
     "zustand": "^4.4.1"

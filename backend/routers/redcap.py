@@ -9,7 +9,10 @@ import httpx
 from fastapi.responses import JSONResponse
 from models.study import StudyCreate as StudyModel   # no _id/timestamp
 from db import get_db
+import logging
 
+
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/redcap", tags=["redcap"])
 
 REDCAP_API_URL     = os.getenv(
@@ -111,9 +114,22 @@ async def _submit_to_redcap(
         async with httpx.AsyncClient() as client:
             r = await client.post(url, data=payload, timeout=15.0)
             r.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        logger.error(
+            "REDCap API error %s for study %s, module %s: %s",
+            e.response.status_code,
+            rsp.study_id,
+            rsp.module_id,
+            e.response.text.strip()
+        )
+        raise
     except Exception:
-        # swallow
-        pass
+        logger.exception(
+            "Unexpected error when submitting to REDCap for study %s, module %s",
+            rsp.study_id,
+            rsp.module_id
+        )
+        raise
 
 
 async def _import_metadata(
