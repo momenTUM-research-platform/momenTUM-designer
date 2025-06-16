@@ -1,4 +1,3 @@
-// src/renderers/ChecklistModal.tsx
 import React, { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -6,52 +5,86 @@ import Papa from "papaparse";
 import { saveAs } from "file-saver";
 import { useStore } from "../State";
 import { constructStudy } from "../utils/construct";
+import dayjs from "dayjs";
 
 interface Row {
   [key: string]: string;
+}
+
+interface Alerts {
+  title: string;
+  message: string;
+  startDateTime: string;
+  repeat: "never" | "daily" | "weekly" | "monthly" | "yearly";
+  interval?: number;
+  until?: string;
+  random: boolean;
+  randomInterval: number;
+  sticky: boolean;
+  stickyLabel: string;
+  timeout: boolean;
+  timeoutAfter: number;
 }
 
 export function ChecklistModal() {
   const { modal, setModal, atoms } = useStore();
   if (modal !== "checklist") return null;
 
-  // Build the current study object from state
   const study = constructStudy(atoms);
   const studyId = study.properties.study_id;
 
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Flatten each module into a table row, including its params.type
   useEffect(() => {
+    const singularMap: Record<string,string> = {
+      daily:   "day",
+      weekly:  "week",
+      monthly: "month",
+      yearly:  "year",
+    };
+  
     const rr: Row[] = study.modules.map((mod) => {
-      const p = (mod as any).params;
-      const a = (mod as any).alerts;
-
+      const a = (mod as any).alerts as Alerts;
+      const p = (mod as any).params as any;
+  
+      // parse start
+      const start = dayjs(a.startDateTime);
+      const date  = start.format("YYYY-MM-DD");
+      const time  = start.format("h:mm A");
+  
+      // build Schedule description
+      let scheduleDesc: string;
+      if (a.repeat === "never") {
+        scheduleDesc = `On ${date} at ${time}`;
+      } else {
+        const n = a.interval ?? 1;
+        const unit = singularMap[a.repeat] || a.repeat;
+        const freq = n === 1 ? `every ${unit}` : `every ${n} ${unit}s`;
+        scheduleDesc = `Starting ${date}, ${freq} at ${time}`;
+        if (a.until) scheduleDesc += ` until ${a.until}`;
+      }
+  
       return {
         ModuleID:        mod.id,
         Name:            mod.name,
         Condition:       mod.condition,
-        Type:            p.type || "",
-        SubmitText:      p.submit_text     || "",
-        ShuffleSections: String(p.shuffle  ?? ""),
-        MinWaiting:      p.min_waiting    != null ? String(p.min_waiting) : "",
-        MaxWaiting:      p.max_waiting    != null ? String(p.max_waiting) : "",
-        TimeoutAfter:    a.timeout_after  != null ? String(a.timeout_after) : "",
-        ScheduledTimes:  a.times
-                            .map((t: any) =>
-                              `${String(t.hours).padStart(2, "0")}:` +
-                              `${String(t.minutes).padStart(2, "0")}`
-                            )
-                            .join("; "),
-      };
+        Type:            p.type           || "",
+        SubmitText:      p.submit_text    || "",
+        ShuffleSections: String(p.shuffle ?? ""),
+        MinWaiting:      p.min_waiting    != null ? String(p.min_waiting)  : "",
+        MaxWaiting:      p.max_waiting    != null ? String(p.max_waiting)  : "",
+        TimeoutAfter:    a.timeoutAfter   != null ? String(a.timeoutAfter) : "",
+        Sticky:          String(a.sticky),
+        RandomInterval:  String(a.randomInterval),
+        Schedule:        scheduleDesc,
+      }
     });
-
+  
     setRows(rr);
     setLoading(false);
   }, [atoms]);
 
-  // Export the rows as CSV
   const downloadCsv = () => {
     const csv = Papa.unparse(rows);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -65,28 +98,17 @@ export function ChecklistModal() {
       className="fixed inset-0 z-50 flex items-center justify-center px-4"
     >
       <Dialog.Overlay className="fixed inset-0 bg-black/30" />
-
-      <div
-        className="
-          relative bg-white rounded-lg shadow-lg 
-          w-full max-h-[90vh] flex flex-col px-6
-          sm:max-w-3xl md:max-w-5xl lg:max-w-7xl xl:max-w-screen-xl
-        "
-      >
-        {/* X button */}
+      <div className="relative bg-white rounded-lg shadow-lg w-full max-h-[90vh] flex flex-col px-6 sm:max-w-3xl md:max-w-5xl lg:max-w-7xl xl:max-w-screen-xl">
         <button
           onClick={() => setModal(null)}
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-900"
         >
           <XMarkIcon className="h-5 w-5" />
         </button>
-
-        {/* Title */}
         <Dialog.Title className="px-6 pt-6 text-lg font-semibold">
           Study Checklist
         </Dialog.Title>
 
-        {/* Table */}
         <div className="px-6 pb-4 flex-1 overflow-hidden flex flex-col">
           {loading ? (
             <div className="flex-grow flex items-center justify-center">
@@ -133,7 +155,6 @@ export function ChecklistModal() {
           )}
         </div>
 
-        {/* Footer */}
         <div className="px-6 py-3 border-t flex justify-end space-x-4">
           <button
             onClick={downloadCsv}

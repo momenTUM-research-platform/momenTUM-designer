@@ -13,7 +13,7 @@ SCHEMA_JSON = json.dumps(
     separators=(",", ":")
 )
 
-p = Path(__file__).parent.parent / "studies" / "llm_test.json"
+p = Path(__file__).parent.parent / "studies" / "example.json"
 EXAMPLE_STUDY = json.loads(p.read_text())
 EXAMPLE_JSON = json.dumps(EXAMPLE_STUDY, separators=(",", ":"))
 

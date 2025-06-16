@@ -230,13 +230,29 @@ export const useStore = create<State>()((set, get) => ({
         if (isProperties(content)) {
           // @ts-ignore Because we are using the root node also as the properties node (which is not correct for the study), the properties fields are in the study object
           state.conditions = ["*", ...content.conditions];
+          
+          const studyId = atom.parent!;             // should be "study"
+          const studyAtom = state.atoms.get(studyId)!;
+          const name = content.study_name || "Study";
+          studyAtom.title = name.length > 32 ? toTitleCase(name.slice(0, 32) + "…"): toTitleCase(name);
         }
       })
     ),
-  setAtoms(atoms) {
-    // Completely replace the atoms and recalculate the graph
-    set({ atoms });
-    localStorage.setItem("atoms", JSON.stringify([...atoms]));
+  setAtoms(newAtoms) {
+    set((state) => {
+      // if the old selection still exists in the new map, keep it;
+      // otherwise fall back to the root "study" node
+      const valid =
+        state.selectedNode && newAtoms.has(state.selectedNode)
+          ? state.selectedNode
+          : "study";
+
+      return {
+        atoms: newAtoms,
+        selectedNode: valid,
+      };
+    });
+    localStorage.setItem("atoms", JSON.stringify([...newAtoms]));
   },
   setModal(value) {
     set({ modal: value });
