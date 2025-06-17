@@ -166,7 +166,22 @@ export function generateOdmXml(study: Study): string {
         }
       });
     }
+     // If this is a PVT module, add its result field
+     if (module.params && module.params.type === 'pvt') {
+      const resultField = `field_${module.id}_pvt_result`;
 
+      // 1) include it in the module’s .fields group
+      itemRefs.push(
+        `<ItemRef ItemOID="${resultField}" Mandatory="No" redcap:Variable="${resultField}"/>`
+      );
+
+      // 2) declare the new field definition
+      itemDefs.push(
+        `<ItemDef OID="${resultField}" Name="${resultField}" DataType="text" Length="999" redcap:Variable="${resultField}" redcap:FieldType="text">` +
+          `<Question><TranslatedText>PVT result for module ${module.id}</TranslatedText></Question>` +
+        `</ItemDef>`
+      );
+    }
     // Create the first ItemGroupDef for this module.
     itemGroupDefs.push(
       "<ItemGroupDef OID=\"module_" + moduleId + ".fields\" Name=\"Module " + moduleId +
