@@ -49,7 +49,7 @@ client = TestClient(app)
 
 @pytest.fixture
 def example_study_payload():
-    p = Path(__file__).parent.parent / "studies" / "example.json"
+    p = Path(__file__).parent.parent / "studies" / "example_new.json"
     return json.loads(p.read_text())
 
 def test_create_redcap_project(client, example_study_payload):

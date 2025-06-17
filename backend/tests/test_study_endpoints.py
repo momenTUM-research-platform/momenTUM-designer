@@ -3,7 +3,7 @@ from pathlib import Path
 
 def test_create_and_fetch_study(client):
     payload = json.loads(
-        (Path(__file__).parent.parent / "studies" / "example.json").read_text()
+        (Path(__file__).parent.parent / "studies" / "example_new.json").read_text()
     )
     # Create
     r1 = client.post("/api/v2/studies", json=payload)

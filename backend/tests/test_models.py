@@ -6,7 +6,7 @@ from models.study import StudyCreate
 
 @pytest.fixture
 def example_study():
-    p = Path(__file__).parent.parent / "studies" / "example.json"
+    p = Path(__file__).parent.parent / "studies" / "example_new.json"
     return json.loads(p.read_text())
 
 def test_study_model_parsing(example_study):
