@@ -24,10 +24,11 @@
       "id": "general_info",
       "name": "participant id",
       "condition": "*",
-      "alerts": {
+     "alerts": {
         "title": "Enroll in the study",
         "message": "The first step is to provide your participant ID",
         "startDateTime": "2025-06-16T23:00:00.000Z",
+        "times": [],
         "interval": 1,
         "repeat": "never",
         "until": "2025-12-31",
@@ -81,6 +82,10 @@
         "title": "Wear Log",
         "message": "Remember to log your watch wear!",
         "startDateTime": "2025-06-16T23:00:00.000Z",
+        "times": [
+          "09:00:00",
+          "21:00:00"
+        ],
         "interval": 1,
         "repeat": "daily",
         "until": "2025-12-31",
@@ -268,6 +273,7 @@
         "title": "Sleep diary",
         "message": "Complete it within 1hr of waking up",
         "startDateTime": "2025-06-17T06:00:00.000Z",
+        "times": [],
         "interval": 1,
         "repeat": "daily",
         "until": "2025-12-31",
@@ -479,10 +485,11 @@
       "id": "apinyz41zw81i935",
       "name": "PVT",
       "condition": "Control",
-      "alerts": {
+     "alerts": {
         "title": "Welcome to the study",
         "message": "Tap to open the app",
         "startDateTime": "2025-06-16T23:00:00.000Z",
+        "times": [],
         "interval": 1,
         "repeat": "never",
         "until": "2025-12-31",
@@ -492,7 +499,7 @@
         "stickyLabel": "Start here",
         "timeout": false,
         "timeoutAfter": 0
-      },
+        },
       "graph": {
         "display": false
       },

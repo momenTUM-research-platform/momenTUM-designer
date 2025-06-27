@@ -23,7 +23,7 @@ const conditionColors = [
   "#073b4c",
   "#ffc6ff",
   "#ff7d00",
-]; // Assuming these are enough
+]; 
 
 export function Calendar() {
   const { conditions } = useStore();
@@ -320,8 +320,13 @@ export function Calendar() {
                               backgroundColor: conditionColors[conditions.indexOf(event.condition)],
                             }}
                           ></div>
-                          <p className="flex-auto truncate font-medium text-gray-900 group-hover:text-main">
+                         <p className="flex-auto truncate font-medium text-gray-900 group-hover:text-main">
                             {event.name}
+                            {event.randomOffset && (
+                              <span className="ml-2 text-xs text-gray-400">
+                                ({event.randomOffset})
+                              </span>
+                            )}
                           </p>
                           <time
                             dateTime={event.datetime}

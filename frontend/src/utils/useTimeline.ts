@@ -1,15 +1,44 @@
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { useStore } from "../State";
-import { schedule, Occurence } from "./scheduler";
-import type { Module, Properties } from "src/app/interfaces/study";
+import { useStore }             from "../State";
+import { schedule, Occurrence } from "./scheduler";
+
+// ———————————————————————————————————————————
+// Local types matching JSON schema:
+
+/** one notification definition */
+interface Alert {
+  title:           string;
+  message:         string;
+  startDateTime:   string;                           // ISO datetime
+  interval?:       number;                           // default=1
+  repeat:          "never"|"daily"|"weekly"|"monthly"|"yearly";
+  until?:          string;                           // YYYY-MM-DD
+  random:          boolean;
+  randomInterval:  number;
+  sticky:          boolean;
+  stickyLabel:     string;
+  timeout:         boolean;
+  timeoutAfter:    number;
+}
+
+/** “module” shape as stored in the atom map */
+interface Module {
+  id:           string;
+  name:         string;
+  condition:    string;
+  alerts:       Alert[];
+  // don’t need graph/unlock_after for scheduling
+}
+
+// ———————————————————————————————————————————
 
 export interface Day {
-  date: string;            // "YYYY-MM-DD"
-  events: Occurence[];     // all events scheduled for that date
-  isCurrentMonth: boolean; // grid cell shading
-  isToday: boolean;        // highlight today
-  isSelected: boolean;     
+  date:           string;    // “YYYY-MM-DD”
+  events:         Occurrence[];
+  isCurrentMonth: boolean;
+  isToday:        boolean;
+  isSelected:     boolean;
 }
 
 export function useTimeline(): [
@@ -18,42 +47,32 @@ export function useTimeline(): [
   Day[]
 ] {
   const [currentDate, setCurrentDate] = useState(dayjs());
-  const atoms = useStore((s) => s.atoms);
+  const atoms = useStore(s => s.atoms);
   const [visibleDays, setVisibleDays] = useState<Day[]>([]);
 
   useEffect(() => {
-    // 1) grab study props + modules out of the atoms map
-    const propsNode = atoms.get("properties");
-    if (!propsNode) return;
-    const properties = propsNode.content as Properties;
-
+    // collect all modules from the atom map:
     const modulesList: Module[] = Array.from(atoms.values())
-      .filter((n) => n.type === "module")
-      .map((n) => n.content as Module);
+      .filter(n => n.type === "module")
+      .map(n => n.content as Module);
 
-    // 2) generate all occurrences using shared scheduler
-    const allEvents: Occurence[] = modulesList.flatMap((m) =>
-      schedule(m, properties)
-    );
+    // generate all occurrences:
+    const allEvents: Occurrence[] = modulesList.flatMap(m => schedule(m));
 
-    // 3) build a 6×7 month grid starting on the Monday before the 1st
+    // build a 6×7 grid for the current month, starting on the Monday before the 1st:
     const startOfMonth = currentDate.startOf("month");
-    // dayjs().day(): Sunday=0…Saturday=6; we want Monday=0…Sunday=6
     const mondayOffset = (startOfMonth.day() + 6) % 7;
-    const gridStart = startOfMonth.subtract(mondayOffset, "day");
+    const gridStart    = startOfMonth.subtract(mondayOffset, "day");
 
-    // 4) fill 42 days, slot each event by matching ISO date prefix
     const grid: Day[] = Array.from({ length: 42 }).map((_, i) => {
-      const d = gridStart.add(i, "day");
+      const d       = gridStart.add(i, "day");
       const dateKey = d.format("YYYY-MM-DD");
       return {
-        date: dateKey,
-        events: allEvents.filter((e) =>
-          e.datetime.startsWith(dateKey)
-        ),
+        date:           dateKey,
+        events:         allEvents.filter(e => e.datetime.startsWith(dateKey)),
         isCurrentMonth: d.month() === currentDate.month(),
-        isToday: d.isSame(dayjs(), "day"),
-        isSelected: false,
+        isToday:        d.isSame(dayjs(), "day"),
+        isSelected:     false,
       };
     });
 

@@ -25,6 +25,7 @@ export const alerts = {
     "message",
     "startDateTime",
     "repeat",
+    "until",
     "random",
     "randomInterval",
     "sticky",
@@ -51,6 +52,17 @@ export const alerts = {
       title: "Date & time",
       description: "Initial notification date and time."
     },
+    times: {
+      type: "array",
+      title: "Additional times",
+      description: "Add one or more extra times of day for this alert.",
+      default: [],
+      items: {
+        type: "string",
+        format: "time",
+        title: "Time of day"
+      }
+    },
     interval: {
       type: "integer",
       title: "Interval",
@@ -69,7 +81,7 @@ export const alerts = {
       type: "string",
       format: "date",
       title: "Until",
-      description: "Optional end date for repeating notifications (YYYY-MM-DD)."
+      description: "End date for repeating notifications (YYYY-MM-DD)."
     },
     random: {
       type: "boolean",

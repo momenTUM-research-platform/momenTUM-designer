@@ -25,50 +25,37 @@ class PyObjectId(ObjectId):
         return {"type": "string"}
 
 
-class Time(BaseModel):
-    hours: int
-    minutes: int
-
-
-
-
 class Alert(BaseModel):
     title: str
     message: str
 
     startDateTime: datetime = Field(alias="startDateTime")
     interval: int = Field(1, ge=1)
-    repeat: Literal["never", "daily", "weekly", "monthly", "yearly"] = Field("never")
-    until: Optional[date] = Field(None, alias="until")
+    repeat: Literal["never","daily","weekly","monthly","yearly"] = Field("never")
+    until: date = Field(None, alias="until")
 
     random: bool
-    random_interval: int = Field(..., alias="randomInterval")
+    randomInterval: int = Field(..., alias="randomInterval")
     sticky: bool
-    sticky_label: str = Field(..., alias="stickyLabel")
+    stickyLabel: str = Field(..., alias="stickyLabel")
     timeout: bool
-    timeout_after: int = Field(..., alias="timeoutAfter")
+    timeoutAfter: int = Field(..., alias="timeoutAfter")
 
-    @root_validator(pre=True)
-    def _migrate_legacy_schema(cls, values):
-        # migrate old start_offset/times to new fields
-        so = values.pop("start_offset", None)
-        times = values.pop("times", None) or []
-        if so is not None and times and not values.get("startDateTime"):
-            # build initial datetime
-            today = date.today() + timedelta(days=so)
-            first = times[0]
-            hour = getattr(first, "hours", 0) if hasattr(first, "hours") else first.get("hours",0)
-            minute = getattr(first, "minutes",0) if hasattr(first, "minutes") else first.get("minutes",0)
-            values["startDateTime"] = f"{today.isoformat()}T{hour:02d}:{minute:02d}:00"
-            values["repeat"] = "daily"
-            # optional duration→until
-            dur = values.pop("duration", None)
-            if dur and dur > 1:
-                until_date = date.today() + timedelta(days=so + dur - 1)
-                values["until"] = until_date.isoformat()
-        values.setdefault("interval", 1)
-        return values
+    times: List[str] = Field(default_factory=list, alias="times")
 
+    @field_validator("times", mode="before")
+    def ensure_time_strings(cls, v):
+        out: List[str] = []
+        for entry in v or []:
+            if isinstance(entry, str):
+                out.append(entry)
+            elif isinstance(entry, dict):
+                h = entry.get("hours", 0)
+                m = entry.get("minutes", 0)
+                out.append(f"{h:02d}:{m:02d}")
+        return out
+
+    model_config = ConfigDict(populate_by_alias=True)
 
 class Graph(BaseModel):
     display: bool
