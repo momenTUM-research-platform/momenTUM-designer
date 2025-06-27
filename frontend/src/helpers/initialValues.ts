@@ -4,7 +4,7 @@ export const initialProperties: Properties = {
   study_id: String(),
   created_by: String(),
   instructions: String(),
-  post_url: "https://tuspl22-momentum.srv.mwn.de/api/v2",
+  post_url: "https://designer.momentumresearch.eu/api/v2",
   empty_msg: String(),
   banner_url: String(),
   support_url: String(),
