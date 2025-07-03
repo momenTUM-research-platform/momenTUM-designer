@@ -40,14 +40,7 @@ This repository contains the Designer service for the momenTUM research platform
 
 ## Caddy Configuration
 
-The `infrastructure/Caddyfile` mounts into the Caddy container. It should include:
-
-```
-:80 {
-  reverse_proxy /api/* backend:8200
-  reverse_proxy /*      frontend:3200
-}
-```
+See [`infrastructure/Caddyfile`](infrastructure/Caddyfile) for the full proxy setup.
 
 ---
 
