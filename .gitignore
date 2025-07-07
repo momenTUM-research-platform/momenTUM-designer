@@ -1,5 +1,4 @@
-./backend/studies/
-# Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -14,67 +13,62 @@ htmlcov/
 pytest_cache/
 .pytest_cache/
 
-# Virtual environment
-.env
+# Virtual environments
 .venv/
 venv/
 ENV/
 env/
 
-# IDEs
+# IDE files
 .vscode/
 .idea/
 *.swp
 
-# macOS
+# macOS system files
 .DS_Store
 
-# Logs
+# Log files
 *.log
 
-# Local database / runtime files
+# Local database and runtime files
 *.sqlite3
 *.db
 *.pid
 
-# MongoDB dump/restore artifacts
+# MongoDB dump artifacts
 dump/
 *.bson
 
-# Docker
-*.pid
-*.seed
-*.pid.lock
+# Docker and related
 docker-compose.override.yml
 **/__init__.pyc
+*.seed
+*.pid.lock
 
-# Secret config
-.env*
+# Other secret files
 secrets.env
-*.local
 
-# Python distribution / packaging
+# Packaging
 build/
 dist/
 *.egg-info/
 
-# Node/npm (if using JS frontend or tailwind etc.)
+# Node dependencies and logs
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Ignore compiled JS bundles if any
+# Bundles
 *.bundle.js
 
-# Other files you might want to ignore
+# Temporary and backup files
 *.bak
 *.tmp
 
-# VS Code debugging
+# VS Code workspace settings
 *.code-workspace
 
-./backend/.env
-
-./backend/routers/nlp.py
-./backend/routers/nlp_local.py
+# Environment files
+backend/.env
+!backend/.env.example      # include template for configuration
