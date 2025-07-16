@@ -52,6 +52,32 @@ async def get_all_versions(
     )
     return docs
 
+@router.get(
+     "/{study_id}/version",
+     summary="Get the latest version of a study by study_id",
+ )   
+async def get_study_version(
+    study_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_db),
+):
+    doc=await db["studies"].find_one(
+        {"properties.study_id": study_id},
+        sort=[("timestamp", -1)],
+    )
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Study '{study_id}' not found"
+        )
+    version= doc.get("version", 1)
+    if version is None:
+        raise  HTTPException(
+            statis_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Study '{study_id}' has no version information"
+        )
+    return {"study_id": study_id, "version": version}
+    
+
 @router.post(
     "",
     summary="Create a new study (or reuse existing)",

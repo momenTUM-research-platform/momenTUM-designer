@@ -27,7 +27,7 @@ services:
     volumes:
       - ./backend:/app
       - ./studies:/app/studies
-    entrypoint: ["pytest"]
+    entrypoint: ["pytest", "--rootdir=/app"]
 
   frontend:
     build:
