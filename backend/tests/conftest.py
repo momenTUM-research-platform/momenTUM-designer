@@ -6,20 +6,23 @@ from main import app
 from config import settings
 from db import get_db as real_get_db
 
-# ─── A tiny async shim around a sync PyMongo cursor ────────────────────────────
+# Async wrapper for a synchronous PyMongo cursor to call .to_list() in async code
 class AsyncCursorWrapper:
     def __init__(self, sync_cursor):
         self._sync_cursor = sync_cursor
 
     def sort(self, *args, **kwargs):
+        # Delegate to the sync cursor’s sort, and return self for chaining
         self._sync_cursor = self._sync_cursor.sort(*args, **kwargs)
         return self
 
     async def to_list(self, length: int):
-        # run the blocking list(...) call in a thread
+        # Run the blocking list(...) call on a thread pool
         return await asyncio.to_thread(lambda: list(self._sync_cursor)[:length])
 
-# ─── A tiny async shim around a sync PyMongo collection ────────────────────────
+
+# Async wrapper for a synchronous PyMongo collection
+# Exposes the same API as Motor’s async Collection
 class AsyncCollectionWrapper:
     def __init__(self, sync_coll):
         self._sync_coll = sync_coll
@@ -28,7 +31,7 @@ class AsyncCollectionWrapper:
         return await asyncio.to_thread(self._sync_coll.find_one, *args, **kwargs)
 
     def find(self, *args, **kwargs):
-        # return our cursor‐wrapper
+        # Return cursor wrapper around the sync cursor
         return AsyncCursorWrapper(self._sync_coll.find(*args, **kwargs))
 
     async def insert_one(self, doc):
@@ -47,38 +50,44 @@ class AsyncCollectionWrapper:
             self._sync_coll.update_one, filter, update, upsert
         )
 
-# ─── And wrap the top‐level Database so __getitem__ hands back our collection shim ─
+
+# Top-level DB wrapper: indexing returns an AsyncCollectionWrapper
 class AsyncDBWrapper:
     def __init__(self, sync_db):
         self._sync_db = sync_db
-        self.client = sync_db.client  # so health-check’s db.client.admin.command still works
+        # Keep the underlying client around for any admin commands or health checks
+        self.client = sync_db.client
 
     def __getitem__(self, name: str):
         return AsyncCollectionWrapper(self._sync_db[name])
 
-# ─── Fixtures ─────────────────────────────────────────────────────────────────
 
 @pytest.fixture(scope="module")
 def test_db():
-    """
-    Yield a synchronous PyMongo Database for testing.
-    Only runs if the configured DB name contains "dev" or "test".
-    """
+    # Only run these DB tests if the configured DB name looks like a dev or test database
     db_name = settings.mongo_db or ""
-    if not any(substr in db_name.lower() for substr in ("dev", "test")):
+    if not any(sub in db_name.lower() for sub in ("dev", "test")):
         pytest.skip(f"Refusing to run DB tests against '{db_name}'")
+
+    # Connect to MongoDB and yield the raw sync database
     client = MongoClient(settings.mongo_url)
     db = client[db_name]
     yield db
+
+    # Clean up the client when tests are done
     client.close()
+
 
 @pytest.fixture(scope="module")
 def client(test_db):
-    """
-    Override FastAPI's get_db to hand back our AsyncDBWrapper(test_db).
-    That way all `await db[...]` calls in your routes will work
-    against the sync PyMongo test_db under the covers.
-    """
+    # Override FastAPI’s get_db dependency to return our AsyncDBWrapper around the test_db
+    from conftest import AsyncDBWrapper
+
     app.dependency_overrides[real_get_db] = lambda: AsyncDBWrapper(test_db)
-    yield TestClient(app)
+
+    # Use a context manager so FastAPI startup/shutdown events are triggered
+    with TestClient(app) as c:
+        yield c
+
+    # Remove override so other tests aren’t affected
     app.dependency_overrides.clear()
