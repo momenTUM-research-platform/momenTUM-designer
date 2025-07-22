@@ -4,28 +4,31 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 import time
 from fastapi.responses import JSONResponse
-from db import get_db
-from models.study import StudyCreate, StudyOut
 from fastapi.encoders import jsonable_encoder
 
+from db import get_db
+from models.study import StudyCreate, StudyOut
+
 router = APIRouter(prefix="/studies", tags=["studies"])
+
 
 @router.get(
     "/{study_id}",
     response_model=StudyOut,
-    summary="Fetch the latest version of a study",
+    response_model_exclude_none=True,
+    status_code=status.HTTP_200_OK,
 )
 async def get_latest_study(
     study_id: str,
     db: AsyncIOMotorDatabase = Depends(get_db),
 ):
-    clauses = []
+    filters = []
     if ObjectId.is_valid(study_id):
-        clauses.append({"_id": ObjectId(study_id)})
-    clauses.append({"properties.study_id": study_id})
+        filters.append({"_id": ObjectId(study_id)})
+    filters.append({"properties.study_id": study_id})
 
     doc = await db["studies"].find_one(
-        {"$or": clauses},
+        {"$or": filters},
         sort=[("timestamp", -1)],
     )
     if not doc:
@@ -35,10 +38,12 @@ async def get_latest_study(
         )
     return doc
 
+
 @router.get(
     "/all/{study_id}",
     response_model=List[StudyOut],
-    summary="Fetch all versions of a study",
+    response_model_exclude_none=True,
+    status_code=status.HTTP_200_OK,
 )
 async def get_all_versions(
     study_id: str,
@@ -52,10 +57,11 @@ async def get_all_versions(
     )
     return docs
 
+
 @router.post(
     "",
     summary="Create a new study (or reuse existing)",
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_study(
     payload: StudyCreate,
@@ -72,7 +78,6 @@ async def create_study(
             },
         )
 
-    # build the raw dict with JSON-safe encoding (dates → ISO strings)
     doc = jsonable_encoder(payload, by_alias=True, exclude_none=True)
     doc["_type"] = "study"
     doc["timestamp"] = int(time.time() * 1000)

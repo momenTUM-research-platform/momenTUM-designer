@@ -166,8 +166,11 @@ class Alert(BaseModel):
 
         return self
 
-    # Serialize using field aliases
-    model_config = ConfigDict(populate_by_alias=True)
+    # Serialize using field aliases and omit any None values
+    model_config = ConfigDict(
+      populate_by_alias=True,
+      exclude_none=True,
+    )
 
 class Graph(BaseModel):
     display: bool
