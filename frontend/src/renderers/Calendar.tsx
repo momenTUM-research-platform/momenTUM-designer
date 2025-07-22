@@ -8,8 +8,9 @@ import {
 } from "@heroicons/react/20/solid";
 import { Menu, Transition } from "@headlessui/react";
 import dayjs from "dayjs";
-import { useStore    } from "../State";
+import { useStore } from "../State";
 import { useTimeline } from "../utils/useTimeline";
+import type { Day } from "../utils/useTimeline";
 
 export function classNames(...classes: (boolean | null | undefined | string)[]) {
   return classes.filter(Boolean).join(" ");
@@ -23,7 +24,7 @@ const conditionColors = [
   "#073b4c",
   "#ffc6ff",
   "#ff7d00",
-]; 
+];
 
 export function Calendar() {
   const { conditions } = useStore();
@@ -33,17 +34,21 @@ export function Calendar() {
   return (
     <div className="lg:flex lg:h-full lg:flex-col">
       <header className="flex items-center justify-between border-b border-gray-200 py-4 px-6 lg:flex-none">
-        <h1 className="text-lg font-semibold text-gray-900">{date.format("MMMM YYYY")}</h1>
+        <h1 className="text-lg font-semibold text-gray-900">
+          {date.format("MMMM YYYY")}
+        </h1>
         <div className="flex items-center">
           <ul className="flex">
             {conditions.map((condition, i) => (
-              <>
+              <Fragment key={condition + i}>
                 <div
-                  className="h-2  mt-1 p-2 rounded-full "
+                  className="h-2 mt-1 p-2 rounded-full"
                   style={{ backgroundColor: conditionColors[i] }}
-                ></div>
-                <li className=" ml-1 mr-4 text ">{condition === "*" ? "All" : condition}</li>
-              </>
+                />
+                <li className="ml-1 mr-4">
+                  {condition === "*" ? "All" : condition}
+                </li>
+              </Fragment>
             ))}
           </ul>
           <div className="flex items-center rounded-md shadow-sm md:items-stretch">
@@ -56,16 +61,16 @@ export function Calendar() {
               <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
             </button>
             <button
-              onClick={() => setDate(dayjs())} // Create new date to reset to today
               type="button"
+              onClick={() => setDate(dayjs())}
               className="hidden border-t border-b border-gray-300 bg-white px-3.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:relative md:block"
             >
               Today
             </button>
             <span className="relative -mx-px h-5 w-px bg-gray-300 md:hidden" />
             <button
-              onClick={() => setDate(date.add(1, "month"))}
               type="button"
+              onClick={() => setDate(date.add(1, "month"))}
               className="flex items-center justify-center rounded-r-md border border-l-0 border-gray-300 bg-white py-2 pl-4 pr-3 text-gray-400 hover:text-gray-500 focus:relative md:w-9 md:px-2 md:hover:bg-gray-50"
             >
               <span className="sr-only">Next month</span>
@@ -79,9 +84,11 @@ export function Calendar() {
                 className="flex items-center rounded-md border border-gray-300 bg-white py-2 pl-3 pr-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
               >
                 Month view
-                <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-400" aria-hidden="true" />
+                <ChevronDownIcon
+                  className="ml-2 h-5 w-5 text-gray-400"
+                  aria-hidden="true"
+                />
               </Menu.Button>
-
               <Transition
                 as={Fragment}
                 enter="transition ease-out duration-100"
@@ -149,20 +156,12 @@ export function Calendar() {
                 </Menu.Items>
               </Transition>
             </Menu>
-            {/* <div className="ml-6 h-6 w-px bg-gray-300" />
-            <button
-              type="button"
-              className="ml-6 rounded-md border border-transparent bg-main py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-main focus:ring-offset-2"
-            >
-              Add event
-            </button> */}
           </div>
           <Menu as="div" className="relative ml-6 md:hidden">
             <Menu.Button className="-mx-2 flex items-center rounded-full border border-transparent p-2 text-gray-400 hover:text-gray-500">
               <span className="sr-only">Open menu</span>
               <EllipsisHorizontalIcon className="h-5 w-5" aria-hidden="true" />
             </Menu.Button>
-
             <Transition
               as={Fragment}
               enter="transition ease-out duration-100"
@@ -173,21 +172,6 @@ export function Calendar() {
               leaveTo="transform opacity-0 scale-95"
             >
               <Menu.Items className="absolute right-0 z-10 mt-3 w-36 origin-top-right divide-y divide-gray-100 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                {/* <div className="py-1">
-                  <Menu.Item>
-                    {({ active }) => (
-                      <a
-                        href="#"
-                        className={classNames(
-                          active ? "bg-gray-100 text-gray-900" : "text-gray-700",
-                          "block px-4 py-2 text-sm"
-                        )}
-                      >
-                        Create event
-                      </a>
-                    )}
-                  </Menu.Item>
-                </div> */}
                 <div className="py-1">
                   <Menu.Item>
                     {({ active }) => (
@@ -264,27 +248,11 @@ export function Calendar() {
       </header>
       <div className="shadow ring-1 ring-black ring-opacity-5 lg:flex lg:flex-auto lg:flex-col">
         <div className="grid grid-cols-7 gap-px border-b border-gray-300 bg-gray-200 text-center text-xs font-semibold leading-6 text-gray-700 lg:flex-none">
-          <div className="bg-white py-2">
-            M<span className="sr-only sm:not-sr-only">on</span>
-          </div>
-          <div className="bg-white py-2">
-            T<span className="sr-only sm:not-sr-only">ue</span>
-          </div>
-          <div className="bg-white py-2">
-            W<span className="sr-only sm:not-sr-only">ed</span>
-          </div>
-          <div className="bg-white py-2">
-            T<span className="sr-only sm:not-sr-only">hu</span>
-          </div>
-          <div className="bg-white py-2">
-            F<span className="sr-only sm:not-sr-only">ri</span>
-          </div>
-          <div className="bg-white py-2">
-            S<span className="sr-only sm:not-sr-only">at</span>
-          </div>
-          <div className="bg-white py-2">
-            S<span className="sr-only sm:not-sr-only">un</span>
-          </div>
+          {['M','T','W','T','F','S','S'].map((d, i) => (
+            <div key={i} className="bg-white py-2">
+              {d}<span className="sr-only sm:not-sr-only">{['on','ue','ed','hu','ri','at','un'][i]}</span>
+            </div>
+          ))}
         </div>
         <div className="flex bg-gray-200 text-xs leading-6 text-gray-700 lg:flex-auto">
           <div className="hidden w-full lg:grid lg:grid-cols-7 lg:grid-rows-6 lg:gap-px">
@@ -315,12 +283,14 @@ export function Calendar() {
                           onClick={() => useStore.setState({ selectedNode: event.module })}
                         >
                           <div
-                            className="h-2  mt-1 p-2 mr-1 rounded-full inline-block "
+                            className="h-2 mt-1 p-2 mr-1 rounded-full inline-block"
                             style={{
-                              backgroundColor: conditionColors[conditions.indexOf(event.condition)],
+                              backgroundColor: conditionColors[
+                                conditions.indexOf(event.condition)
+                              ],
                             }}
-                          ></div>
-                         <p className="flex-auto truncate font-medium text-gray-900 group-hover:text-main">
+                          />
+                          <p className="flex-auto truncate font-medium text-gray-900 group-hover:text-main">
                             {event.name}
                             {event.randomOffset && (
                               <span className="ml-2 text-xs text-gray-400">
@@ -390,7 +360,7 @@ export function Calendar() {
       {selectedDay && selectedDay.events.length > 0 && (
         <div className="py-10 px-4 sm:px-6 lg:hidden">
           <ol className="divide-y divide-gray-100 overflow-hidden rounded-lg bg-white text-sm shadow ring-1 ring-black ring-opacity-5">
-            {selectedDay?.events.map((event) => (
+            {selectedDay.events.map((event) => (
               <li
                 key={event.id}
                 className="group flex p-4 pr-6 focus-within:bg-gray-50 hover:bg-gray-50"

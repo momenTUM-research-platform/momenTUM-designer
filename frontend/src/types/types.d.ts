@@ -1,3 +1,5 @@
+// src/types/types.d.ts
+
 declare type AtomVariants =
   | "study"
   | "module"
@@ -36,21 +38,21 @@ declare interface Occurence {
   timestamp: number;
   name: string;
   time: string;
-  datetime: string; // YYYY-MM-DD'T'HH:MM,
+  datetime: string; // YYYY-MM-DD'T'HH:MM
   condition: string;
   module: string; // id of module
 }
 
-declare type Days = Occurence[][]; // Array of 1000 consecutive days starting from today each containing an array of events on that day
+declare type Days = Occurence[][];
 
 declare interface Day {
   date: string; // "YYYY-MM-DD"
   isCurrentMonth?: boolean;
   isSelected?: boolean;
   isToday?: boolean;
-
   events: Occurence[];
 }
+
 declare interface Study {
   _type: "study";
   _id?: { $oid: string };
@@ -78,26 +80,10 @@ declare interface Properties {
 
 declare interface Module {
   _type: "module";
-  name: string;
   id: string;
+  name: string;
   condition: string;
-  unlock_after: [];
-  alerts: {
-    title: string;
-    message: string;
-    start_offset: number;
-    duration: number;
-    times: {
-      hours: number;
-      minutes: number;
-    }[];
-    random: boolean;
-    random_interval: number;
-    sticky: boolean;
-    sticky_label: string;
-    timeout: boolean;
-    timeout_after: number;
-  };
+  unlock_after: string[];
   graph:
     | {
         display: true;
@@ -109,6 +95,44 @@ declare interface Module {
       }
     | { display: false };
   params: Params;
+  alerts: {
+    /** Use calendar dates (absolute) or offset from enrollment (relative) */
+    scheduleMode: "absolute" | "relative";
+    /** Preview date for relative schedules (designer only) */
+    expectedEnrollmentDate?: string;
+    /** Initial date/time for absolute mode */
+    startDateTime?: string;
+    /** Days after enrollment for first notification */
+    offsetDays?: number;
+    /** Time of day (HH:MM) on offset day for first notification */
+    offsetTime?: string;
+    /** Notification title text */
+    title: string;
+    /** Notification message/body text */
+    message: string;
+    /** Extra times of day for this alert (HH:MM strings) */
+    times: string[];
+    /** How often to repeat this notification */
+    repeat: "never" | "daily" | "weekly" | "monthly" | "yearly";
+    /** Repeat interval count (e.g., every N days/weeks) */
+    interval: number;
+    /** Number of additional notifications after the first (relative mode) */
+    repeatCount?: number;
+    /** End date for repeating notifications (YYYY-MM-DD, absolute mode) */
+    until?: string;
+    /** Offset each notification by ±randomInterval minutes */
+    random: boolean;
+    /** Maximum minutes to randomize before/after scheduled time */
+    randomInterval: number;
+    /** Keep notification visible until acted on */
+    sticky: boolean;
+    /** Label for grouping sticky notifications */
+    stickyLabel: string;
+    /** Remove notification if not acted on within timeoutAfter ms */
+    timeout: boolean;
+    /** Milliseconds before notification times out */
+    timeoutAfter: number;
+  };
 }
 
 declare interface Params {
@@ -116,12 +140,12 @@ declare interface Params {
   id?: string;
   type?: string;
   trials?: number;
-  submit_text?: string;
   min_waiting?: number;
   max_waiting?: number;
   show?: boolean;
   max_reaction?: number;
   exit?: boolean;
+  submit_text?: string;
   shuffle?: boolean;
   sections?: Section[];
 }
@@ -147,17 +171,13 @@ declare interface Question {
   _type: "question";
   id: string;
   text: string;
-  //  type: "instruction" | "datetime" | "multi" | "text" | "slider" | "media" | "yesno" | "external";
   required: boolean;
   rand_group: string;
-
   hide_id?: string;
   hide_value?: string | boolean;
   hide_if?: boolean;
-
-  // find out whats really needed
   noToggle?: boolean;
-  response?: number | string | [];
+  response?: number | string | any[];
   hideSwitch?: boolean;
   model?: string | number;
   hideError?: boolean;
@@ -170,9 +190,9 @@ interface Instruction extends Question {
 interface TextQuestion extends Question {
   type: "text";
   subtype: "short" | "long" | "numeric";
-  /** Optional minimum allowed value, only for numeric subtype */
+  /** Optional minimum allowed value */
   min_value?: number;
-  /** Optional maximum allowed value, only for numeric subtype */
+  /** Optional maximum allowed value */
   max_value?: number;
 }
 interface DateTime extends Question {
@@ -196,14 +216,14 @@ interface Multi extends Question {
   radio: boolean;
   modal: boolean;
   options: string[];
-  optionsChecked?: Option[]; // adjust in Generator
+  optionsChecked?: Option[];
   shuffle: boolean;
 }
 interface Media extends Question {
   type: "media";
   subtype: "image" | "video" | "audio";
   src: string;
-  thumb: string;
+  thumb?: string;
 }
 interface External extends Question {
   type: "external";

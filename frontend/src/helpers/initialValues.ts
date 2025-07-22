@@ -1,3 +1,5 @@
+import { Properties, Module, Params, Section, TextQuestion } from "../types";
+
 export const initialProperties: Properties = {
   _type: "properties",
   study_name: "Study",
@@ -15,41 +17,46 @@ export const initialProperties: Properties = {
   pls: String(),
 };
 
-export const initialModule = (id: string): Module => {
-  return {
-    _type: "module",
-    id,
-    alerts: {
-      title:  "",
-      message: "",
-      startDateTime: "",          
-      repeat: "never",            
-      interval: 1,                
-      until: "",                  
-      random: false,
-      randomInterval: 0,
-      sticky: false,
-      stickyLabel: "",
-      timeout: false,
-      timeoutAfter: 0,
-    },
-    condition: "",
-    graph: {
-      display: false,
-    },
-    name: "",
-    unlock_after: [],
-    params: {
-      _type: "params",
-    }
-  };
-};
+export const initialModule = (id: string): Module => ({
+  _type: "module",
+  id,
+  name: "",
+  condition: "",
+  unlock_after: [],
+  graph: { display: false },
+  params: { _type: "params" },
+  alerts: {
+    // switch default to relative
+    scheduleMode: "relative",
+
+    // content
+    title: "",
+    message: "",
+
+    // relative fields (all valid)
+    offsetDays:    0,
+    offsetTime:    "00:00",
+    repeatCount:   0,
+
+    // common defaults
+    repeat:        "never",
+    interval:      1,
+    times:         [],
+
+    random:        false,
+    randomInterval: 0,
+    sticky:        false,
+    stickyLabel:   "",
+    timeout:       false,
+    timeoutAfter:  0,
+  },
+});
 
 export const initialParamSurvey = (id: string): Params => {
   return {
-    id,
     _type: "params",
     type: "survey",
+    id,
     submit_text: "Submit",
     shuffle: false,
     sections: [],
