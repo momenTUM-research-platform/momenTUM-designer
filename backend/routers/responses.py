@@ -70,5 +70,32 @@ async def save_response(
 
     # queue the REDCap push using the same live db client
     background.add_task(_submit_to_redcap, db, rsp)
+    await db["studies"].update_one(
+        {"properties.study_id": study_id},
+        {
+            "$inc": {"version": 1},
+            "$set": {"last_updated": response_time}
+        },
+        upsert=False  # change to True if you want to create the study doc if it doesn't exist
+    )
+    await db["studies"].update_one(
+        {"properties.study_id": study_id},
+        [
+            {
+                "$set": {
+                    "version": {
+                        "$cond": {
+                            "if": {"$gt": ["$version", 0]},
+                            "then": {"$add": ["$version", 1]},
+                            "else": 1
+                        }
+                    },
+                    "timestamp": response_time  # optional: update timestamp
+                }
+            }
+        ],
+        upsert=False
+    )
+    background.add_task(_submit_to_redcap, db, rsp)
 
     return {"accepted": True}

@@ -17,6 +17,13 @@ def test_create_and_fetch_study(client, test_db):
         r2 = client.get(f"/api/v2/studies/{sid}")
         assert r2.status_code == 200, r2.text
         assert r2.json()["properties"]["study_id"] == payload["properties"]["study_id"]
+        study_id = payload["properties"]["study_id"]
+        r3 = client.get(f"/api/v2/redcap/{study_id}/version")
+        assert r3.status_code == 200, r3.text
+        assert r3.json()["study_id"] == study_id
+        assert isinstance(r3.json()["version"], int)  
+        print("Version response:", r3.json())
+        
     finally:
         # Clean up by study_id
         result = test_db["studies"].delete_one({
