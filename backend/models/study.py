@@ -21,8 +21,8 @@ class PyObjectId(ObjectId):
         raise TypeError("Invalid ObjectId")
 
     @classmethod
-    def __get_pydantic_json_schema__(cls, _):
-        return {"type": "string"}
+    def __get_pydantic_json_schema__(cls, schema: core_schema.CoreSchema, handler) -> JsonSchemaValue:
+        return {"type": "string", "format": "objectid"}
 
 
 class Alert(BaseModel):
