@@ -111,16 +111,11 @@ async def create_study(
     incoming["version"] = version_new
     incoming["_type"] = "study"
     incoming["timestamp"] = int(time.time() * 1000)
-
-    # doc = jsonable_encoder(payload, by_alias=True, exclude_none=True)
-    # doc["_type"] = "study"
-    # doc["timestamp"] = int(time.time() * 1000)
-
     result = await db["studies"].insert_one(incoming)
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content={
-            "message": "New study created",
+            "message": "New version of study createds",
             "permalink": str(result.inserted_id),
         },
     )
