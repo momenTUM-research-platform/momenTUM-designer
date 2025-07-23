@@ -6,6 +6,7 @@ import time
 from fastapi.responses import JSONResponse
 from db import get_db
 from models.study import StudyCreate, StudyOut
+from datetime import  datetime
 from fastapi.encoders import jsonable_encoder
 
 router = APIRouter(prefix="/studies", tags=["studies"])
@@ -88,8 +89,17 @@ async def create_study(
     db: AsyncIOMotorDatabase = Depends(get_db),
 ):
     sid = payload.properties.study_id
-    existing = await db["studies"].find_one({"properties.study_id": sid})
-    if existing and not sid.startswith("test"):
+    incoming=jsonable_encoder(payload, by_alias=True, exclude_none=True)
+    existing = await db["studies"].find_one({"properties.study_id": sid},
+                                            sort=[("version", -1)])
+    
+    def compare(doc):
+        return{
+            k: v for k, v in doc.items() if k not in ["_id", "timestamp", "version"]
+        }
+    existing_compare=compare(existing) if existing else None
+    incoming_compare= compare(incoming)
+    if existing_compare == incoming_compare:
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
@@ -97,13 +107,16 @@ async def create_study(
                 "permalink": str(existing["_id"]),
             },
         )
+    version_new=(existing.get("version", 0) if existing else 0)+1
+    incoming["version"] = version_new
+    incoming["_type"] = "study"
+    incoming["timestamp"] = int(time.time() * 1000)
 
-    # build the raw dict with JSON-safe encoding (dates → ISO strings)
-    doc = jsonable_encoder(payload, by_alias=True, exclude_none=True)
-    doc["_type"] = "study"
-    doc["timestamp"] = int(time.time() * 1000)
+    # doc = jsonable_encoder(payload, by_alias=True, exclude_none=True)
+    # doc["_type"] = "study"
+    # doc["timestamp"] = int(time.time() * 1000)
 
-    result = await db["studies"].insert_one(doc)
+    result = await db["studies"].insert_one(incoming)
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content={
