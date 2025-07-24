@@ -10,7 +10,7 @@ import {
   QrCodeIcon,
   TableCellsIcon,
 } from "@heroicons/react/24/outline";
-import { load, save, saveRedcapFileForManual } from "../services/actions";
+import { load, save, saveRedcapFileForManual, previousVersions } from "../services/actions";
 import { classNames } from "./Calendar";
 import { useStore } from "../State";
 import { toast } from "react-hot-toast";
@@ -77,6 +77,12 @@ export function Menu() {
       name: "View Study Checklist",
       description: "Preview all study settings in a table for a quick sanity check before uploading.",
       action: () => setModal("checklist"),
+      icon: TableCellsIcon,
+    },
+    {
+      name: "View Previous Versions of the Study",
+      description: "Previous Versions.",
+      action: () => previousVersions(study),
       icon: TableCellsIcon,
     },
   ];

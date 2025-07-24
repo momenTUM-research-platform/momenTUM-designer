@@ -225,3 +225,18 @@ export async function generateStudy(instructions: string): Promise<Study> {
     throw err;
   }
 }
+export async function previousVersions(study: Study): Promise<Study[]> {
+  const uri = `${API_URL}/studies/${study.properties.study_id}/versions`;
+  console.debug("[previousVersions] Fetching versions from:", uri);
+  try {
+    const response = await fetch(uri);
+    if (response.ok) {
+      return await response.json();
+    } else {
+      throw new Error(`Status ${response.status}: ${await response.text()}`);
+    }
+  } catch (error) {
+    console.error("[previousVersions] Error:", error);
+    throw error;
+  }
+}
