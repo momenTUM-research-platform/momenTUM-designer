@@ -77,6 +77,33 @@ async def get_study_version(
             detail=f"Study '{study_id}' has no version information"
         )
     return {"study_id": study_id, "version": version}
+
+@router.get(
+    "/{study_id}/versions",
+    summary="Get all versions of a study by study_id",
+)
+async def get_all_study_versions(
+    study_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_db),
+):
+    print(f"Received request for study_id: {study_id}")
+    
+    doc=await db["studies"].find({"properties.study_id": study_id}).to_list(length=100)
+    print(f"Found {len(doc)} documents")
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Study '{study_id}' not found"
+        )
+        
+    versions = [d.get("version", 1) for d in doc]
+    if not versions:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Study '{study_id}' has no version information"
+        )
+    return {"study_id": study_id, "versions": versions}
+
     
 
 @router.post(

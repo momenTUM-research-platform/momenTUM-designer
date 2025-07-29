@@ -225,3 +225,27 @@ export async function generateStudy(instructions: string): Promise<Study> {
     throw err;
   }
 }
+
+export async function getAllStudyVersions(): Promise<any[]> {
+  const { study } = useStore.getState();  
+  const studyId = study?.properties?.study_id;
+
+  if (!studyId) {
+    throw new Error("No study ID available in current context.");
+  } 
+  const uri = `${API_URL}/studies/${studyId}/versions`;
+  console.debug("[getAllStudyVersions] GET →", uri);
+
+  try {
+    const response = await fetch(uri);
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Status ${response.status}: ${text}`);
+    }
+   
+    return await response.json();
+  } catch (err) {
+    console.error("[getAllStudyVersions] Error:", err);
+    throw err;
+  }
+}

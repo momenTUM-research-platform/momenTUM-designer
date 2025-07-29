@@ -10,7 +10,7 @@ import {
   QrCodeIcon,
   TableCellsIcon,
 } from "@heroicons/react/24/outline";
-import { load, save, saveRedcapFileForManual } from "../services/actions";
+import { load, save, saveRedcapFileForManual, getAllStudyVersions } from "../services/actions";
 import { classNames } from "./Calendar";
 import { useStore } from "../State";
 import { toast } from "react-hot-toast";
@@ -79,6 +79,22 @@ export function Menu() {
       action: () => setModal("checklist"),
       icon: TableCellsIcon,
     },
+    {
+      name: "View all Study",
+      description: "View all previous versions of the study.",
+      action: async () => {
+        try {
+          const result = await getAllStudyVersions();
+          console.log("Sending study ID to backend:", study.properties.study_id);
+
+          //console.log("Study Versions:", result.versions); 
+          toast.success(`Fetched  version(s)`);
+        } catch (error) {
+          toast.error("Could not fetch study versions");
+        }
+      },
+  icon: TableCellsIcon,
+    }
   ];
 
   return (
