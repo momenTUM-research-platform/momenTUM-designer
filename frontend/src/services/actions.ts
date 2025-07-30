@@ -259,6 +259,7 @@ export async function getAllStudyVersions(): Promise<any[]> {
 
     const data = await response.json();
     console.debug("[getAllStudyVersions] parsed JSON response:", data);
+    console.log("Available versions:", data.versions);
 
     return data;
   } catch (err) {

@@ -79,22 +79,51 @@ export function Menu() {
       action: () => setModal("checklist"),
       icon: TableCellsIcon,
     },
-    {
-      name: "View all Study",
-      description: "View all previous versions of the study.",
-      action: async () => {
-        try {
-          const result = await getAllStudyVersions();
-          console.log("Sending study ID to backend:", study.properties.study_id);
+  //   {
+  //     name: "View all Study",
+  //     description: "View all previous versions of the study.",
+  //     action: async () => {
+  //       try {
+  //         const result = await getAllStudyVersions();
+  //         console.log("📦 Study Versions:", result);
+  //         //console.log("Study Versions:", result.versions); 
+  //         toast.success(`Fetched  version(s)`);
+  //       } catch (error) {
+  //         toast.error("Could not fetch study versions");
+  //       }
+  //     },
+  // icon: TableCellsIcon,
+  //   }
+  {
+  name: "View all Study",
+  description: "View and load previous versions of the study.",
+  action: async () => {
+    try {
+      const result = await getAllStudyVersions();
+      const versions = result.versions;
+      if (!versions || versions.length === 0) {
+        toast.error("No versions available.");
+        return;
+      }
 
-          //console.log("Study Versions:", result.versions); 
-          toast.success(`Fetched  version(s)`);
-        } catch (error) {
-          toast.error("Could not fetch study versions");
-        }
-      },
-  icon: TableCellsIcon,
+      const selected = prompt(
+        `Available versions:\n${versions.join(", ")}\n\nEnter a version number to load:`
+      );
+
+      if (selected && versions.includes(Number(selected))) {
+        await load();
+        toast.success(`Loaded version ${selected}`);
+      } else if (selected !== null) {
+        toast.error("Invalid version selected.");
+      }
+    } catch (error) {
+      console.error("Error fetching versions:", error);
+      toast.error("Could not fetch study versions");
     }
+  },
+  icon: TableCellsIcon,
+}
+
   ];
 
   return (
