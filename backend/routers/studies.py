@@ -8,6 +8,10 @@ from db import get_db
 from models.study import StudyCreate, StudyOut
 from datetime import  datetime
 from fastapi.encoders import jsonable_encoder
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/studies", tags=["studies"])
 
@@ -86,23 +90,39 @@ async def get_all_study_versions(
     study_id: str,
     db: AsyncIOMotorDatabase = Depends(get_db),
 ):
-    print(f"Received request for study_id: {study_id}")
-    
-    doc=await db["studies"].find({"properties.study_id": study_id}).to_list(length=100)
-    print(f"Found {len(doc)} documents")
-    if not doc:
+    try:
+        logger.info(f"Received request for study_id: {study_id}")
+        docs = await db["studies"].find(
+            {"properties.study_id": study_id}
+        ).to_list(length=100)
+        logger.info(f"Found {len(docs)} documents for study_id={study_id}")
+
+        if not docs:
+            logger.warning(f"No documents found for study_id={study_id}")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Study '{study_id}' not found"
+            )
+
+        versions = [d.get("version", 1) for d in docs]
+        if not versions:
+            logger.warning(f"No version fields in documents for study_id={study_id}")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Study '{study_id}' has no version information"
+            )
+
+        return {"study_id": study_id, "versions": versions}
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error(f"Error fetching versions for study_id={study_id}: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Study '{study_id}' not found"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
-        
-    versions = [d.get("version", 1) for d in doc]
-    if not versions:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Study '{study_id}' has no version information"
-        )
-    return {"study_id": study_id, "versions": versions}
 
     
 
@@ -142,7 +162,7 @@ async def create_study(
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content={
-            "message": "New version of study createds",
+            "message": "New version of study created",
             "permalink": str(result.inserted_id),
         },
     )
