@@ -267,3 +267,29 @@ export async function getAllStudyVersions(): Promise<any[]> {
     throw err;
   }
 }
+
+export async function getSpecificStudyVersion(version: string): Promise<any> {
+  const { atoms } = useStore.getState();
+  const study = constructStudy(atoms);
+  const studyId = study?.properties?.study_id;
+
+  if (!studyId) {
+    console.error("[getSpecificStudyVersion] No study ID available in current context.");
+    throw new Error("No study ID available in current context.");
+  }
+
+  const uri = `${API_URL}/studies/${studyId}/versions/${version}`;
+  console.debug("[getSpecificStudyVersion] GET →", uri);
+
+  try {
+    const response = await fetch(uri);
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Status ${response.status}: ${text}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("[getSpecificStudyVersion] Error:", error);
+    throw error;
+  }
+}

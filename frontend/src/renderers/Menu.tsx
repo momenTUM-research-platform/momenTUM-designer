@@ -10,14 +10,17 @@ import {
   QrCodeIcon,
   TableCellsIcon,
 } from "@heroicons/react/24/outline";
-import { load, save, saveRedcapFileForManual, getAllStudyVersions } from "../services/actions";
+import { load, save, saveRedcapFileForManual, getAllStudyVersions, getSpecificStudyVersion } from "../services/actions";
 import { classNames } from "./Calendar";
 import { useStore } from "../State";
 import { toast } from "react-hot-toast";
-
+import StudyVersionSelector from "./StudyVersionSelector";
+import React from "react";
+import { useState } from "react";
 export function Menu() {
   const { setModal, study } = useStore();
-  
+  const [showStudyVersionModal, setShowStudyVersionModal] = useState(false);
+
   const actions = [
     {
       name: "Save Study",
@@ -94,39 +97,47 @@ export function Menu() {
   //     },
   // icon: TableCellsIcon,
   //   }
+  // {
+  // name: "View all Study",
+  // description: "View and load previous versions of the study.",
+  // action: async () => {
+  //   try {
+  //     const result = await getAllStudyVersions();
+  //     const versions = result.versions;
+  //     if (!versions || versions.length === 0) {
+  //       toast.error("No versions available.");
+  //       return;
+  //     }
+
+  //     const selected = prompt(
+  //       `Available versions:\n${versions.join(", ")}\n\nEnter a version number to load:`
+  //     );
+
+  //     if (selected && versions.includes(Number(selected))) {
+  //       await getSpecificStudyVersion(selected)
+  //       toast.success(`Loaded version ${selected}`);
+  //     } else if (selected !== null) {
+  //       toast.error("Invalid version selected.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching versions:", error);
+  //     toast.error("Could not fetch study versions");
+  //   }
+  // },
+  // icon: TableCellsIcon,
   {
   name: "View all Study",
   description: "View and load previous versions of the study.",
-  action: async () => {
-    try {
-      const result = await getAllStudyVersions();
-      const versions = result.versions;
-      if (!versions || versions.length === 0) {
-        toast.error("No versions available.");
-        return;
-      }
-
-      const selected = prompt(
-        `Available versions:\n${versions.join(", ")}\n\nEnter a version number to load:`
-      );
-
-      if (selected && versions.includes(Number(selected))) {
-        await load();
-        toast.success(`Loaded version ${selected}`);
-      } else if (selected !== null) {
-        toast.error("Invalid version selected.");
-      }
-    } catch (error) {
-      console.error("Error fetching versions:", error);
-      toast.error("Could not fetch study versions");
-    }
-  },
+  action: () => setShowStudyVersionModal(true),
   icon: TableCellsIcon,
-}
+  }
+  
+
 
   ];
 
   return (
+    <>
     <Popover className="">
       {({ open }) => (
         <>
@@ -201,5 +212,11 @@ export function Menu() {
         </>
       )}
     </Popover>
+    <StudyVersionSelector
+      isOpen={showStudyVersionModal}
+      onClose={() => setShowStudyVersionModal(false)}
+    />
+
+    </>
   );
 }

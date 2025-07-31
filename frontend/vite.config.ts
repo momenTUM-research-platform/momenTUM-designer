@@ -1,33 +1,37 @@
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import react from '@vitejs/plugin-react';
+// import path from 'path';
+// import { fileURLToPath } from 'url';
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename); // ✅ FIX: add `path.`
 
 /**
  * Vite configuration for Designer frontend
  * - Listens on all interfaces (host: true)
  * - Whitelists all necessary preview hosts
  */
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   server: {
-    host: true,     // listen on 0.0.0.0 for dev
+    host: true,
     port: 3200,
   },
   preview: {
-    host: true,     // listen on 0.0.0.0 for preview
+    host: true,
     port: 3000,
-    allowedHosts: [ // hostnames for preview
+    allowedHosts: [
       '127.0.0.1',
       'localhost',
       '0.0.0.0',
       '::1',
       'designer.127.0.0.1.nip.io',
       'designer.localtest.me',
-      'designer.momentumresearch.eu'
+      'designer.momentumresearch.eu',
     ],
   },
   test: {
-    // Jest-like globals
     globals: true,
     environment: 'jsdom',
     setupFiles: './tests/setup.ts',
@@ -48,7 +52,7 @@ export default defineConfig(({ mode }) => ({
     },
     commonjsOptions: {
       target: 'es2018',
-      ignoreTryCatch: false, // allow including dagre-graphlib etc.
+      ignoreTryCatch: false,
     },
   },
-}));
+});
