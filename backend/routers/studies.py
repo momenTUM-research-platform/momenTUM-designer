@@ -114,6 +114,24 @@ async def get_all_study_versions(
 
         return {"study_id": study_id, "versions": versions}
 
+        # versions = [
+        #     {
+        #         "version": d.get("version", 1),
+        #         "created_at": datetime.fromtimestamp(d["timestamp"] / 1000).isoformat()
+        #         if "timestamp" in d else None
+        #     }
+        #     for d in docs
+        # ]
+
+        # if not versions:
+        #     logger.warning(f"No version fields in documents for study_id={study_id}")
+        #     raise HTTPException(
+        #         status_code=status.HTTP_404_NOT_FOUND,
+        #         detail=f"Study '{study_id}' has no version information"
+        #     )
+
+        # return {"study_id": study_id, "versions": versions}
+
     except HTTPException:
         raise
 

@@ -53,17 +53,14 @@ export default function StudyVersionSelector({ isOpen, onClose }) {
             <ul className="space-y-2 max-h-64 overflow-y-auto">
               {versions.map((v) => (
                 <li
-                  key={v.version}
+                  key={v.version ?? v}
                   className="flex items-center justify-between border p-2 rounded hover:bg-gray-100"
                 >
                   <div>
-                    <p className="font-medium">Version {v.version}</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(v.created_at).toLocaleString()}
-                    </p>
+                    <p className="font-medium">Version {v.version ?? v}</p>
                   </div>
                   <button
-                    onClick={() => handleLoad(v.version)}
+                    onClick={() => handleLoad(v.version ?? v)}
                     className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                   >
                     Load
