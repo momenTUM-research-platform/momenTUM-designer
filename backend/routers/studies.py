@@ -140,10 +140,7 @@ async def get_all_study_versions(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
-        )
-
-    
-
+        )    
 @router.post(
     "",
     summary="Create a new study (or reuse existing)",
@@ -184,3 +181,24 @@ async def create_study(
             "permalink": str(result.inserted_id),
         },
     )
+@router.get(
+    "/{study_id}/versions/{version}",
+    response_model=StudyOut,
+    summary="Fetch a specific version of a study by version number",
+)
+async def get_specific_study_version(
+    study_id: str,
+    version: int,
+    db: AsyncIOMotorDatabase = Depends(get_db),
+):
+    doc = await db["studies"].find_one({
+        "properties.study_id": study_id,
+        "version": version
+    })
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Study '{study_id}' with version {version} not found"
+        )
+
+    return doc

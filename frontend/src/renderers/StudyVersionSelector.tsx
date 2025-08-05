@@ -2,6 +2,10 @@ import { Dialog } from "@headlessui/react";
 import { useEffect, useState } from "react";
 import { getAllStudyVersions, getSpecificStudyVersion } from "../services/actions";
 import { toast } from "react-hot-toast";
+import { deconstructStudy } from "../utils/deconstruct";
+import { validateStudyFromObj } from "../services/validations";
+import { constructStudy } from "../utils/construct";
+import { useStore } from "../State";
 import React from "react";
 
 export default function StudyVersionSelector({ isOpen, onClose }) {
@@ -30,11 +34,29 @@ export default function StudyVersionSelector({ isOpen, onClose }) {
 
   const handleLoad = async (version) => {
     try {
-      await getSpecificStudyVersion(version);
-      toast.success(`Loaded version ${version}`);
-      onClose();
+      const store = useStore.getState();
+      const study = constructStudy(store.atoms);
+      const studyId = study?.properties?.study_id;
+
+      if (!studyId) {
+        toast.error("Study ID not available.");
+        return;
+      }
+
+      const data = await getSpecificStudyVersion(studyId, version);
+      const deconstructed = deconstructStudy(data);
+      const rebuilt = constructStudy(deconstructed);
+
+      if (validateStudyFromObj(rebuilt)) {
+        store.setAtoms(deconstructed);
+        toast.success(`Version ${version} loaded successfully.`);
+        onClose();
+      } else {
+        toast.error("Invalid study structure.");
+      }
     } catch (err) {
-      toast.error("Error loading version");
+      console.error("[handleLoad] Failed to load version", err);
+      toast.error("Error loading version.");
     }
   };
 

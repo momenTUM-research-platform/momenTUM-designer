@@ -268,18 +268,77 @@ export async function getAllStudyVersions(): Promise<any[]> {
   }
 }
 
-export async function getSpecificStudyVersion(version: string): Promise<any> {
-  const { atoms } = useStore.getState();
-  const study = constructStudy(atoms);
-  const studyId = study?.properties?.study_id;
+// export async function getSpecificStudyVersion(version: string): Promise<any> {
+//   const { atoms } = useStore.getState();
+//   const study = constructStudy(atoms);
+//   const studyId = study?.properties?.study_id;
 
+//   if (!studyId) {
+//     console.error("[getSpecificStudyVersion] No study ID available in current context.");
+//     throw new Error("No study ID available in current context.");
+//   }
+
+//   const uri = `${API_URL}/studies/${studyId}/versions/${version}`;
+//   console.debug("[getSpecificStudyVersion] GET →", uri);
+
+//   try {
+//     const response = await fetch(uri);
+//     if (!response.ok) {
+//       const text = await response.text();
+//       throw new Error(`Status ${response.status}: ${text}`);
+//     }
+//     return await response.json();
+//   } catch (error) {
+//     console.error("[getSpecificStudyVersion] Error:", error);
+//     throw error;
+//   }
+// }
+// export async function getSpecificStudyVersion(version: string): Promise<any> {
+//   console.debug("[getSpecificStudyVersion] Starting...");
+//   const { useStore } = await import("../State");
+//   const { atoms } = useStore.getState();
+//   console.debug("[getSpecificStudyVersion] Retrieved atoms from store:", atoms);
+
+//   const study = constructStudy(atoms);
+//   console.debug("[getSpecificStudyVersion] Constructed study from atoms:", study);
+
+//   const studyId = study?.properties?.study_id;
+//   console.debug("[getSpecificStudyVersion] Extracted studyId:", studyId);
+
+//   if (!studyId) {
+//     console.error("[getSpecificStudyVersion] No study ID available in current context.");
+//     throw new Error("No study ID available in current context.");
+//   }
+
+//   const uri = `${API_URL}/studies/${studyId}/versions/${version}`;
+//   console.debug(`[getSpecificStudyVersion] Fetching study version from: ${uri}`);
+
+//   try {
+//     const response = await fetch(uri);
+//     console.debug("[getSpecificStudyVersion] Fetch completed. Status:", response.status);
+
+//     if (!response.ok) {
+//       const text = await response.text();
+//       console.error("[getSpecificStudyVersion] Fetch failed. Status text:", response.statusText);
+//       console.error("[getSpecificStudyVersion] Response text:", text);
+//       throw new Error(`Status ${response.status}: ${text}`);
+//     }
+
+//     const data = await response.json();
+//     console.debug("[getSpecificStudyVersion] Successfully fetched version data:", data);
+//     return data;
+//   } catch (error) {
+//     console.error("[getSpecificStudyVersion] Error during fetch:", error);
+//     throw error;
+//   }
+// }
+export async function getSpecificStudyVersion(studyId: string, version: string): Promise<any> {
   if (!studyId) {
-    console.error("[getSpecificStudyVersion] No study ID available in current context.");
-    throw new Error("No study ID available in current context.");
+    throw new Error("No study ID provided.");
   }
 
   const uri = `${API_URL}/studies/${studyId}/versions/${version}`;
-  console.debug("[getSpecificStudyVersion] GET →", uri);
+  console.debug(`[getSpecificStudyVersion] Fetching from: ${uri}`);
 
   try {
     const response = await fetch(uri);
