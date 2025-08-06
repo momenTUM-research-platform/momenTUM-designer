@@ -5,7 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 import time
 from fastapi.responses import JSONResponse
 from db import get_db
-from models.study import StudyCreate, StudyOut
+from models.study import StudyCreate, StudyOut, StudyEvent
 from datetime import  datetime
 from fastapi.encoders import jsonable_encoder
 import logging
@@ -26,6 +26,28 @@ async def log_event(event: StudyEvent, db: AsyncIOMotorDatabase=Depends(get_db))
     await db["study_events"].insert_one(doc)
     return{"message": "Event logged successfully", "event_id": str(doc["_id"])}
    
-   
-   
-   
+ 
+@router.get("/{study_id}/timeline", response_model=List[StudyEvent], summary="Get study event timeline")
+async def get_study_timeline(study_id: str, db: AsyncIOMotorDatabase=Depends(get_db)):
+    """
+    Fetch the timeline of events for a specific study.
+    """
+    cursor = db["study_events"].find({"study_id": study_id}).sort("timestamp", -1)
+    events=await cursor.to_list(length=100)
+    for event in events:
+        event["_id"] = str(event["_id"])
+    return {"study_id": study_id, "events": events}
+
+@router.get("/{study_id}/participant/{participant_id}", response_model=List[StudyEvent], summary="Get participant events")
+async def get_participant_events(
+    study_id: str,
+    participant_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_db),
+):
+    cursor=db["study_events"].find(
+        {"study_id": study_id, "participant_id": participant_id}
+    ).sort("timestamp", -1)
+    events=await cursor.to_list(length=100)
+    for event in events:
+        event["_id"] = str(event["_id"])
+    return {"participant_id":participant_id, "study_id": study_id, "events": events}

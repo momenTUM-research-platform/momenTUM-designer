@@ -4,7 +4,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 from db import get_db
-from routers import studies, responses, logs, redcap, users
+from routers import studies, responses, progress, redcap, users
 
 
 logging.basicConfig(
@@ -45,4 +45,5 @@ app.include_router(studies.router, prefix=prefix, tags=["studies"])
 app.include_router(responses.router, prefix=prefix, tags=["responses"])
 app.include_router(redcap.router, prefix=prefix, tags=["redcap"])
 app.include_router(users.router, prefix=prefix, tags=["users"])
+app.include_router(progress.router, prefix=prefix, tags=["progress"])
 # app.include_router(nlp.router, prefix=prefix, tags=["nlp"])
