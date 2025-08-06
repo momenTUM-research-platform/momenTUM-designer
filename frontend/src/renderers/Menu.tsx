@@ -23,26 +23,26 @@ export function Menu() {
 
   const actions = [
     {
-      name: "Save Study",
+      name: "Download JSON File",
       description: "Save your study on your computer in a JSON file.",
       action: save,
       icon: ArrowDownTrayIcon,
     },
     {
-      name: "Load Study",
+      name: "Upload JSON File to Study",
       description: "Load a study from a JSON file on your computer",
       action: load,
       icon: ArrowUpTrayIcon,
     },
     {
-      name: "Upload",
+      name: "Upload Study to Server",
       description:
         "Save your study on the server and receive a link you can share with anyone.",
       action: () => setModal("upload"),
       icon: CloudArrowUpIcon,
     },
     {
-      name: "Download",
+      name: "Load Study from Server",
       description:
         "Download any study by its study id or permalink from the server.",
       action: () => setModal("download"),
@@ -82,51 +82,9 @@ export function Menu() {
       action: () => setModal("checklist"),
       icon: TableCellsIcon,
     },
-  //   {
-  //     name: "View all Study",
-  //     description: "View all previous versions of the study.",
-  //     action: async () => {
-  //       try {
-  //         const result = await getAllStudyVersions();
-  //         console.log("📦 Study Versions:", result);
-  //         //console.log("Study Versions:", result.versions); 
-  //         toast.success(`Fetched  version(s)`);
-  //       } catch (error) {
-  //         toast.error("Could not fetch study versions");
-  //       }
-  //     },
-  // icon: TableCellsIcon,
-  //   }
-  // {
-  // name: "View all Study",
-  // description: "View and load previous versions of the study.",
-  // action: async () => {
-  //   try {
-  //     const result = await getAllStudyVersions();
-  //     const versions = result.versions;
-  //     if (!versions || versions.length === 0) {
-  //       toast.error("No versions available.");
-  //       return;
-  //     }
 
-  //     const selected = prompt(
-  //       `Available versions:\n${versions.join(", ")}\n\nEnter a version number to load:`
-  //     );
-
-  //     if (selected && versions.includes(Number(selected))) {
-  //       await getSpecificStudyVersion(selected)
-  //       toast.success(`Loaded version ${selected}`);
-  //     } else if (selected !== null) {
-  //       toast.error("Invalid version selected.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching versions:", error);
-  //     toast.error("Could not fetch study versions");
-  //   }
-  // },
-  // icon: TableCellsIcon,
   {
-  name: "View all Study",
+  name: "View Study Versions",
   description: "View and load previous versions of the study.",
   action: () => setShowStudyVersionModal(true),
   icon: TableCellsIcon,
