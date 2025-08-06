@@ -24,18 +24,18 @@ export function Menu() {
   const actions = [
     {
       name: "Download JSON File",
-      description: "Save your study on your computer in a JSON file.",
+      description: "Download your study on your computer in a JSON file.",
       action: save,
       icon: ArrowDownTrayIcon,
     },
     {
-      name: "Upload JSON File to Study",
-      description: "Load a study from a JSON file on your computer",
+      name: "Upload JSON File",
+      description: "Upload a study from a JSON file on your computer",
       action: load,
       icon: ArrowUpTrayIcon,
     },
     {
-      name: "Upload Study to Server",
+      name: "Save Study to Server",
       description:
         "Save your study on the server and receive a link you can share with anyone.",
       action: () => setModal("upload"),
@@ -44,7 +44,7 @@ export function Menu() {
     {
       name: "Load Study from Server",
       description:
-        "Download any study by its study id or permalink from the server.",
+        "Load any study by its study id or permalink from the server.",
       action: () => setModal("download"),
       icon: CloudArrowDownIcon,
     },
@@ -58,14 +58,14 @@ export function Menu() {
     {
       name: "Create REDCap Project",
       description:
-        "Automagically creates a project in REDCap with your study and stores the responses from your participants in it.",
+        "Automatically creates a project in REDCap with your study and stores the responses from your participants in it.",
       action: () => setModal("redcap"),
       icon: BookOpenIcon,
     },
     {
-      name: "Save REDCap File",
+      name: "Download REDCap File",
       description:
-        "Generate and save the ODM file for manual REDCap upload.",
+        "Generate and download the ODM file to your computer for manual REDCAP upload.",
       action: saveRedcapFileForManual,
       icon: ArrowDownTrayIcon,
     },
