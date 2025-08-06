@@ -30,7 +30,7 @@ export function Menu() {
     },
     {
       name: "Upload JSON File",
-      description: "Upload a study from a JSON file on your computer",
+      description: "Upload a study from a JSON file on your computer.",
       action: load,
       icon: ArrowUpTrayIcon,
     },
@@ -65,7 +65,7 @@ export function Menu() {
     {
       name: "Download REDCap File",
       description:
-        "Generate and download the ODM file to your computer for manual REDCAP upload.",
+        "Generate and download the ODM file to your computer for manual REDCap upload.",
       action: saveRedcapFileForManual,
       icon: ArrowDownTrayIcon,
     },
