@@ -268,3 +268,13 @@ class StudyCreate(BaseModel):
     modules: List[Module]
 
     model_config = ConfigDict(populate_by_alias=True)
+
+class StudyEvent(BaseModel):
+    study_id: str
+    participant_id: str
+    event_type: Literal["StudyCreated", "StudyUpdated", "ParticipantAdded", "ResponseSubmitted", "StudyDeleted", "ParticipantRemoved", "ResponseDeleted"]
+    version: int
+    timestamp: datetime 
+    payload: Dict[str, Any]
+    
+    
