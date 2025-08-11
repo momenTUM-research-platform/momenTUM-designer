@@ -83,13 +83,20 @@ export function Menu() {
       icon: TableCellsIcon,
     },
 
-  {
-  name: "View Study Versions",
-  description: "View and load previous versions of the study.",
-  action: () => setShowStudyVersionModal(true),
-  icon: TableCellsIcon,
-  }
-  
+    {
+    name: "View Study Versions",
+    description: "View and load previous versions of the study.",
+    action: () => setShowStudyVersionModal(true),
+    icon: TableCellsIcon,
+    },
+    
+    {
+      name: "Open Prototype",
+      description: "Open the prototype of the study in a new tab.",
+      action:()=>window.open("/prototype", "_blank"),
+      icon: TableCellsIcon,
+    }
+    
 
 
   ];
