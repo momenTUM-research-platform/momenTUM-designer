@@ -276,5 +276,3 @@ class StudyEvent(BaseModel):
     version: int
     timestamp: datetime 
     payload: Dict[str, Any]
-    
-    

@@ -17,15 +17,18 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/progress", tags=["study-events"])
 
 @router.post("/event", summary="Log a study event")
-async def log_event(event: StudyEvent, db: AsyncIOMotorDatabase=Depends(get_db)):
-    """
-    Log a study event to the database.
-    """
-    doc=event.dict()
-    doc["_id"] = ObjectId()
-    doc["timestamp"] = datetime.utcnow()
-    await db["study_events"].insert_one(doc)
-    return{"message": "Event logged successfully", "event_id": str(doc["_id"])}
+async def log_event(event: StudyEvent, db: AsyncIOMotorDatabase = Depends(get_db)):
+    logger.info(f"Incoming study event: {event.dict()}")
+    try:
+        doc = event.dict()
+        doc["_id"] = ObjectId()
+        doc["timestamp"] = datetime.utcnow()
+        await db["study_events"].insert_one(doc)
+        logger.info(f"Event logged successfully: {doc['_id']}")
+        return {"message": "Event logged successfully", "event_id": str(doc["_id"])}
+    except Exception as e:
+        logger.exception("Error logging event")
+        raise HTTPException(status_code=500, detail=str(e))
    
  
 @router.get("/{study_id}/timeline", response_model=Dict[str, Any], summary="Get study event timeline")
