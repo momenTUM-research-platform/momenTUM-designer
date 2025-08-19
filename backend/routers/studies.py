@@ -92,9 +92,12 @@ async def get_all_study_versions(
 ):
     try:
         logger.info(f"Received request for study_id: {study_id}")
-        docs = await db["studies"].find(
-            {"properties.study_id": study_id}
-        ).to_list(length=100)
+        docs = await (
+            db["studies"]
+            .find({"properties.study_id": study_id})
+            .sort("version", -1)  
+            .to_list(length=100)
+        )
         logger.info(f"Found {len(docs)} documents for study_id={study_id}")
 
         if not docs:

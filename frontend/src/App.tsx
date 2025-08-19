@@ -9,6 +9,7 @@ import Drag from "../assets/drag";
 import { Calendar } from "./renderers/Calendar";
 import { Modal } from "./renderers/controllers/Modal";
 import Prototype from "./renderers/Prototype"; 
+import ProgressBar from "./renderers/ProgressBar"; 
 
 
 export const API_URL =
@@ -69,6 +70,7 @@ function App() {
         />
 
         <Route path="/prototype" element={<Prototype />} />
+         <Route path="/ProgressBar" element={<ProgressBar />} />
 
       </Routes>
     </Router>
