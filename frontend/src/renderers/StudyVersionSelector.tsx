@@ -13,26 +13,26 @@ export default function StudyVersionSelector({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      setLoading(true);
-      getAllStudyVersions()
-        .then((res) => {
-          if (res.versions?.length > 0) {
-            setVersions(res.versions);
-          } else {
-            toast.error("No versions available.");
-            onClose();
-          }
-        })
-        .catch(() => {
-          toast.error("Could not fetch versions.");
-          onClose();
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [isOpen]);
+    if (!isOpen) return;
 
-  const handleLoad = async (version) => {
+    setLoading(true);
+    getAllStudyVersions()
+      .then((res) => {
+        if (res.versions?.length > 0) {
+          setVersions(res.versions);
+        } else {
+          toast.error("No versions available.");
+          onClose();
+        }
+      })
+      .catch(() => {
+        toast.error("Could not fetch versions.");
+        onClose();
+      })
+      .finally(() => setLoading(false));
+  }, [isOpen, onClose]);
+
+  const handleLoad = async (versionNumber) => {
     try {
       const store = useStore.getState();
       const study = constructStudy(store.atoms);
@@ -43,13 +43,13 @@ export default function StudyVersionSelector({ isOpen, onClose }) {
         return;
       }
 
-      const data = await getSpecificStudyVersion(studyId, version);
+      const data = await getSpecificStudyVersion(studyId, versionNumber);
       const deconstructed = deconstructStudy(data);
       const rebuilt = constructStudy(deconstructed);
 
       if (validateStudyFromObj(rebuilt)) {
         store.setAtoms(deconstructed);
-        toast.success(`Version ${version} loaded successfully.`);
+        toast.success(`Version ${versionNumber} loaded successfully.`);
         onClose();
       } else {
         toast.error("Invalid study structure.");
@@ -75,14 +75,22 @@ export default function StudyVersionSelector({ isOpen, onClose }) {
             <ul className="space-y-2 max-h-64 overflow-y-auto">
               {versions.map((v) => (
                 <li
-                  key={v.version ?? v}
+                  key={v.version}
                   className="flex items-center justify-between border p-2 rounded hover:bg-gray-100"
                 >
                   <div>
-                    <p className="font-medium">Version {v.version ?? v}</p>
+                    <p className="font-medium">Version {v.version}</p>
+                    <p className="text-sm text-gray-500">
+                      Original study created on:{" "}
+                      {v.created_at ? new Date(v.created_at).toLocaleDateString() : "—"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      This version was created on:{" "}
+                      {v.timestamp ? new Date(v.timestamp).toLocaleDateString() : "—"}
+                    </p>
                   </div>
                   <button
-                    onClick={() => handleLoad(v.version ?? v)}
+                    onClick={() => handleLoad(v.version)}
                     className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                   >
                     Load

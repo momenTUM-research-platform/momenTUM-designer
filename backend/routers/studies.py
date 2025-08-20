@@ -81,7 +81,6 @@ async def get_study_version(
             detail=f"Study '{study_id}' has no version information"
         )
     return {"study_id": study_id, "version": version}
-
 @router.get(
     "/{study_id}/versions",
     summary="Get all versions of a study by study_id",
@@ -92,40 +91,58 @@ async def get_all_study_versions(
 ):
     try:
         logger.info(f"Received request for study_id: {study_id}")
+        query = {"properties.study_id": study_id}
+
         docs = await (
             db["studies"]
-            .find({"properties.study_id": study_id})
+            .find(query)
             .sort("version", -1)  
             .to_list(length=100)
         )
+
         logger.info(f"Found {len(docs)} documents for study_id={study_id}")
 
         if not docs:
-            logger.warning(f"No documents found for study_id={study_id}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Study '{study_id}' not found"
             )
 
-        versions = [d.get("version", 1) for d in docs]
-        if not versions:
-            logger.warning(f"No version fields in documents for study_id={study_id}")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Study '{study_id}' has no version information"
-            )
+        versions = [] 
+        oldest = docs[-1] if docs else None  #
+
+        for d in docs:
+            ver = d.get("version")
+            created_at = d.get("created_at")
+            ts = d.get("timestamp")
+
+            if not created_at and oldest:
+                created_at = oldest.get("timestamp")
+            created_at = int(created_at) if isinstance(created_at, (int, float)) else None
+            ts = int(ts) if isinstance(ts, (int, float)) else None
+
+            logger.info(f"Version {ver}, created_at={created_at}, timestamp={ts}")
+
+            versions.append({
+                "version": ver,
+                "created_at": created_at,
+                "timestamp": ts,
+            })
 
         return {"study_id": study_id, "versions": versions}
 
     except HTTPException:
         raise
-
     except Exception as e:
-        logger.error(f"Error fetching versions for study_id={study_id}: {e}", exc_info=True)
+        logger.error(
+            f"Error fetching versions for study_id={study_id}: {e}",
+            exc_info=True
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
-        )    
+        )
+
 @router.post(
     "",
     summary="Create a new study (or reuse existing)",
@@ -154,10 +171,26 @@ async def create_study(
                 "permalink": str(existing["_id"]),
             },
         )
-    version_new=(existing.get("version", 0) if existing else 0)+1
+    # version_new=(existing.get("version", 0) if existing else 0)+1
+    # incoming["version"] = version_new
+    # incoming["_type"] = "study"
+    # incoming["timestamp"] = int(time.time() * 1000)
+    # result = await db["studies"].insert_one(incoming)
+    version_new = (existing.get("version", 0) if existing else 0) + 1
     incoming["version"] = version_new
     incoming["_type"] = "study"
-    incoming["timestamp"] = int(time.time() * 1000)
+
+    now = int(time.time() * 1000)
+
+    # If this is the very first version → store created_at
+    if not existing:
+        incoming["created_at"] = now
+    else:
+        # carry forward original created_at from previous version
+        incoming["created_at"] = existing.get("created_at")
+
+    incoming["timestamp"] = now  # when this version was created
+
     result = await db["studies"].insert_one(incoming)
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
